@@ -1,4 +1,44 @@
 import PySimpleGUI as sg
 
 #https://realpython.com/pysimplegui-python/
-sg.Window(title="Planificador de rutas", layout= [[sg.Text("Planificador de rutas")], [sg.Button("OK")]], margins=(500, 200)).read()
+#sg.Window(title="Planificador de rutas", layout= [[sg.Text("Planificador de rutas")], [sg.Button("OK")]], margins=(500, 200)).read()
+
+
+
+
+layout = [[sg.Text('Localidad', size=(15, 1)), sg.InputText()],
+            [sg.Text('Número de camiones', size=(15, 1)), sg.InputText()],
+            [sg.Text('Capacidad de camiones', size=(15, 1)), sg.InputText()],
+            [sg.Text('Velocidad de camiones', size=(15, 1)), sg.InputText()],
+            [sg.Text('Llenado inicial', size=(15, 1)), sg.InputText()],
+            [sg.Text('Aumento diario', size=(15, 1)), sg.InputText()],
+            [sg.Text('Número de días', size=(15, 1)), sg.InputText()],
+            [sg.Button('Planificar'), sg.Button('Exit')]]
+
+
+
+
+window = sg.Window('Planificador de rutas', layout, grab_anywhere=True)
+
+
+
+while True:  # Event Loop
+    event, values = window.read()
+    #print(event, values)
+    if event == sg.WIN_CLOSED or event == 'Exit':
+        break
+    if event == 'Planificar': 
+        localidad = values[0]
+        nCamiones = values[1]
+        capCamiones = values[2]
+        velCamiones = values[3]
+        llenadoInicial = values[4]
+        aumentoDiario = values[5]
+        numDias = values[6]
+
+        print(localidad, nCamiones, capCamiones,  velCamiones, llenadoInicial, aumentoDiario, numDias)    # the input data looks like a simple list when auto numbered
+
+    
+window.close()
+
+
