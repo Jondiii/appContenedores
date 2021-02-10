@@ -1,9 +1,12 @@
 import PySimpleGUI as sg
 
+#Interesting links with examples 
 #https://realpython.com/pysimplegui-python/
+#https://pysimplegui.readthedocs.io/en/latest/cookbook/
+#https://pypi.org/project/PySimpleGUI/
+
+
 #sg.Window(title="Planificador de rutas", layout= [[sg.Text("Planificador de rutas")], [sg.Button("OK")]], margins=(500, 200)).read()
-
-
 
 
 layout = [[sg.Text('Localidad', size=(15, 1)), sg.InputText()],
