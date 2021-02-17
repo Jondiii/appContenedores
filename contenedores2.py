@@ -1,32 +1,3 @@
-
-# CÓDIGO DESCARGADO 
-# simplemente se han borrado los comentarios no necesarios y ordenado un poco todo
-
-#COMENTARIOS 
-
-# para que se quiten los errores he tenido que comentar las líneas 24-28
-
-
-# Se introducirá en las ventanas/formulario
-
-localidad = "" 
-nCamiones =  6
-capacidadCamiones = 700 
-velCamiones = 0 
-llenadoInicial = 0 
-aumentoDiario = 0 
-numDias =  3
-vector = "1,2,3,4,5"
-separadorV = "," 
-
-##Código
-
-#!python -m pip install --upgrade --user ortools
-#!pip install ortools==7.3.7083
-#!pip install pyproj
-#!pip install overpy
-#!pip install --upgrade --user ortools
-
 from __future__ import print_function
 from ortools.constraint_solver import routing_enums_pb2
 from ortools.constraint_solver import pywrapcp
@@ -52,11 +23,40 @@ import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 pd.options.mode.chained_assignment = None
 
+##NO BORRAR!! Hay que hacer las siguientes instalaciones en local.
+#python -m pip install --upgrade ortools
+#pip install pyproj
+#pip install overpy
+#pip install scipy
+#pip install pandas
+#pip install sklearn
+#pip install matplotlib
+
+# CÓDIGO DESCARGADO 
+# simplemente se han borrado los comentarios no necesarios y ordenado un poco todo
+
+#COMENTARIOS 
+
+# para que se quiten los errores he tenido que comentar las líneas 24-28
+
+
+# Se introducirá en las ventanas/formulario
+
+localidad = "" 
+nCamiones =  6
+capacidadCamiones = 700 
+velCamiones = 0 
+llenadoInicial = 0 
+aumentoDiario = 0 
+numDias =  3
+vector = "1,2,3,4,5"
+separadorV = "," 
+
+
+
 """Ponemos la URL donde están los datos a utilizar, que han tenido que ser subidos previamente a GitHub en formato CSV."""
 
 metodoBusqueda = routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC
-#Otro algotimo que parece ser más rápido
-#metodoBusqueda = routing_enums_pb2.FirstSolutionStrategy.PARALLEL_CHEAPEST_INSERTION
 
 
 header = 0
@@ -95,9 +95,13 @@ def leerDatos(localidad):
 
   return datos
 
-"""Se crea el modelo de datos que se va a utilizar para los cálculos. Es aquí donde se modifican los datos para poder hacer pequeñas variaciones en el ejercicio.
 
-Hemos incluído en data todos los datos, matrices y demás necesarios para realizar los cálculos, para poder tener todo lo necesario en una única variable.
+
+"""Se crea el modelo de datos que se va a utilizar para los cálculos. Es aquí donde se modifican los datos 
+para poder hacer pequeñas variaciones en el ejercicio.
+
+Hemos incluído en data todos los datos, matrices y demás necesarios para realizar los cálculos,
+para poder tener todo lo necesario en una única variable.
 """
 
 def create_data_model2(localidad, capacidadCamiones, ncamiones, depot):
@@ -137,9 +141,10 @@ def create_data_model2(localidad, capacidadCamiones, ncamiones, depot):
 
     return data
 
-"""#### Métodos para calcular la matriz de distancias
+"""###Métodos para calcular la matriz de distancias
 
-Segundo método. Se tiene en cuenta el radio de la Tierra y otros factores a la hora de aplicar la transformación de las coordenadas.
+Segundo método. Se tiene en cuenta el radio de la Tierra y otros factores a la hora de aplicar
+la transformación de las coordenadas.
 """
 
 def crearMatrizCoordenadas2(datos):
@@ -169,7 +174,7 @@ def crearMatrizCoordenadas2(datos):
 
   dist = DistanceMetric.get_metric('manhattan')
 
-  #Creamos una matrix bidimensional que contenga tanto la latitud como la longitud
+  #Creamos una matriz bidimensional que contenga tanto la latitud como la longitud
   #6372 es el valor del radio de la tierra usando KM
   #3798 es el valor que tendriamos que usar si lo queremos en Millas
 
@@ -183,7 +188,8 @@ def crearMatrizCoordenadas2(datos):
 
 """####Métodos matriz de tiempos
 
-A partir de la matriz distancia creada en crearMatrizCoordenadas2 conseguimos una nueva matriz que refleja el tiempo en minutos que se tarda de un contenedor a otro.
+A partir de la matriz distancia creada en crearMatrizCoordenadas2 conseguimos una
+nueva matriz que refleja el tiempo en minutos que se tarda de un contenedor a otro.
 """
 
 def crearMatrizTiempos_Enrique(data):
@@ -201,11 +207,15 @@ def crearMatrizTiempos_Enrique(data):
 
 """#### Métodos intermedios
 
-El siguiente método creará el Routing Model. Para ello, primero se tiene que crear el Index Manager, los cuales se utilizan para señalizar los nodos por los que se estén pasando. Primero se pasa el número de contenedores, luego los vehículos y finalmente el punto de partida.
+El siguiente método creará el Routing Model. Para ello, primero se tiene que crear el Index Manager,
+los cuales se utilizan para señalizar los nodos por los que se estén pasando. Primero se pasa el
+número de contenedores, luego los vehículos y finalmente el punto de partida.
 
-Una vez tenemos el manager, creamos el modelo, que es quien se encarga de todos los cálculos, para lo que basta con pasarle el manager creado anteriormente.
+Una vez tenemos el manager, creamos el modelo, que es quien se encarga de todos los cálculos, para
+lo que basta con pasarle el manager creado anteriormente.
 
-También sería posible configurar el orden de entrega de los paquetes (mismo orden que el de recogida o el inverso). Aunque no nos interese para este problema, podría llegar a ser útil en el futuro.
+También sería posible configurar el orden de entrega de los paquetes (mismo orden que el de recogida o
+el inverso). Aunque no nos interese para este problema, podría llegar a ser útil en el futuro.
 """
 
 def creaRoutingModel(data):
@@ -216,7 +226,10 @@ def creaRoutingModel(data):
 
   return routing, manager
 
-"""Este método se usa para crear dimensiones. Las dimensiones son objetos que el solver utiliza para registrar las distintas cantidades que tiene un vehículo (capacidad, tiempo etc). Se puede encontrar más información sobre estas [aquí](https://developers.google.com/optimization/routing/dimensions#slack_variables)."""
+
+"""Este método se usa para crear dimensiones. Las dimensiones son objetos que el solver
+utiliza para registrar las distintas cantidades que tiene un vehículo (capacidad, tiempo etc).
+Se puede encontrar más información sobre estas [aquí](https://developers.google.com/optimization/routing/dimensions#slack_variables)."""
 
 def creaDimensiones(routing, manager, data):
   # Esta función callback toma dos localizaciones y devuelve la distancia entre ellas.
@@ -256,7 +269,9 @@ def creaDimensiones(routing, manager, data):
       True,  # True para que la carga inicial de cada vehículo sea 0.
       'Capacity')
 
-"""Método igual que el anterior, pero que se usará en caso de quer añadir la restricción de las Time Windows. No produce resultados correctos (de momento)."""
+
+"""Método igual que el anterior, pero que se usará en caso de quer añadir
+la restricción de las Time Windows. No produce resultados correctos (de momento)."""
 
 def creaDimensionesTW(routing, manager, data):
   # Esta función callback toma dos localizaciones y devuelve la distancia entre ellas.
@@ -322,10 +337,12 @@ def creaDimensionesTW(routing, manager, data):
     routing.AddVariableMinimizedByFinalizer(
         time_dimension.CumulVar(routing.End(i)))
 
-"""Se crean parámetros por defecto y se elige el método de búsqueda. Esto es lo más interesante de este trozo de código, pues puede influenciar en gran medida el resultado. La lista de métodos se puede encontrar [aquí](https://developers.google.com/optimization/routing/routing_options#first_sol_options). Algunos notables:
 
+"""Se crean parámetros por defecto y se elige el método de búsqueda. Esto es lo más
+interesante de este trozo de código, pues puede influenciar en gran medida el resultado.
+La lista de métodos se puede encontrar [aquí](https://developers.google.com/optimization/routing/routing_options#first_sol_options).
+Algunos notables:
 """
-
 def creaParametrosBusqueda():
   search_parameters = pywrapcp.DefaultRoutingSearchParameters()
   
@@ -360,13 +377,17 @@ def getTime(t):
     seg = str(math.floor(((seg/100)*60)*100)).zfill(2)
     return horas + ':' + min + ':' + seg
 
-"""Función que convierte nuestros números int a floats para que tengan sentido a la hora de imprimirlos. Actualmente, OR-Tools no puede utilizarse con floats ([fuente](https://github.com/google/or-tools/issues/2149)) por lo que tenemos que usar ints y luego ponerles la coma. Esto es algo que debería solucionarse en la versión 8.0 de OR-Tools, así que de momento usaremos este método para salir del paso. FLTV8"""
+"""Función que convierte nuestros números int a floats para que tengan sentido a la
+hora de imprimirlos. Actualmente, OR-Tools no puede utilizarse con floats
+([fuente](https://github.com/google/or-tools/issues/2149)) por lo que tenemos que usar ints y luego ponerles la coma.
+Esto es algo que debería solucionarse en la versión 8.0 de OR-Tools, así que de momento usaremos este método para salir
+del paso. FLTV8"""
 
 def toFloat(n):
   return n/100
 
-"""Método para pasar de segundos a minutos. FLTV8"""
 
+"""Método para pasar de segundos a minutos. FLTV8"""
 def getMin(seg):
   min = (round(seg)//60)
   if round(seg)%60 >0.5:
@@ -374,11 +395,13 @@ def getMin(seg):
   
   return int(min)
 
+
 """####Varios
 
-Método que toma un DataFrame y sustituye sus índices por un rango de valores que va de `value` a `n+value` (siendo n la longitud del DataFrame - 1). Devuelve el DataFrame con los índices cambiados y devuelve los índices antiguos.
+Método que toma un DataFrame y sustituye sus índices por un rango de valores que va de
+`value` a `n+value` (siendo n la longitud del DataFrame - 1). Devuelve el DataFrame con
+los índices cambiados y devuelve los índices antiguos.
 """
-
 def reseteaIndices(data, value):  
   oldIndex = list(data.index)
   newIndex = pd.Series(np.arange(0+value,len(data)+value))
@@ -396,13 +419,16 @@ def reseteaIndices(data, value, new = False):
   else:
     return data, oldIndex
 
-"""Método que recibe el DataFrame datos y devuelve el mismo DaraFrame pero solo con los contenedores que no hayan sido recogidos aún."""
 
+"""Método que recibe el DataFrame datos y devuelve el mismo DaraFrame pero solo con
+los contenedores que no hayan sido recogidos aún."""
 def filtro(data):
   return data[data['recogido'] == False]
 
-"""Método que recibe un dataframe de una única fila y devuelve una lista. Existe df.values.tolist() pero esto devuelve una lista donde cada valor es un array de longitud 1, y eso da problemas al intentar usar los métodos de OR Tools."""
 
+"""Método que recibe un dataframe de una única fila y devuelve una lista. Existe
+df.values.tolist() pero esto devuelve una lista donde cada valor es un array de longitud 1,
+y eso da problemas al intentar usar los métodos de OR Tools."""
 def dfToList(dataFrame, ceros = False):
   primeraVez = True
   if dataFrame.shape[1] != 1:
@@ -420,8 +446,9 @@ def dfToList(dataFrame, ceros = False):
 
     return lista
 
-"""Método que recibe la capacidad máxima de los contenedores y un dataframe con el porcentaje de llenado de cada contenedor. De ahí calcula las demandas (y las devuelve). """
 
+"""Método que recibe la capacidad máxima de los contenedores y un dataframe con el porcentaje de
+llenado de cada contenedor. De ahí calcula las demandas (y las devuelve). """
 def calculaDemandas(capacidadCont, df, ceros=False):
   df = dfToList(df, ceros)
   demands = []
@@ -434,11 +461,11 @@ def procesaVector(vector, separadorV):
   # DUDA converitri cada elemento en un integer ? 
   return vector.split(separadorV)
 
+
 """####Crear nuevo DataModel
 
 Crea un nuevo DataModel eliminando de `data` todos los datos relacionados con los índices de `contARecoger`.
 """
-
 def newDatamodel(data, contARecoger):
 
   indicesDrop = []
@@ -483,11 +510,11 @@ def newDatamodel(data, contARecoger):
 
   return newData
 
+
 """####Sacar plan
 
 Método que calcula un plan inicial aleatorio recibiendo el número máximo de días y el número de contenedores.
 """
-
 def randomPlan(nCont, nDias):
 
   rng = np.random.default_rng(1)
@@ -495,8 +522,10 @@ def randomPlan(nCont, nDias):
 
   return plan
 
-"""Método que recibe data y saca un estado inicial, un aumento diario (ambos semi-aleatorios) y un plan. Habría que reajustarlo en caso de que cada camión tenga distintas capacidades o que se quiera usar un número distinto de camiones cada día."""
 
+"""Método que recibe data y saca un estado inicial, un aumento diario (ambos semi-aleatorios) y un plan.
+Habría que reajustarlo en caso de que cada camión tenga distintas capacidades o que se quiera usar un
+número distinto de camiones cada día."""
 def sacarPlan(data, sizeCont, nDias, capacidadTotal):
 
   estadoI = [0]
@@ -560,15 +589,14 @@ def sacarPlan(data, sizeCont, nDias, capacidadTotal):
 
   return pd.DataFrame(estadoI), aumentoDF, plan
 
+
 """###Visualizar resultados
 
 ####Prints
 
 Saca las rutas, el tiempo de llegada a cada contenedor, la carga en cada punto de la ruta, la carga total y la distancia total.
-
 Además, se ha juntado con el método que guarda las rutas.
 """
-
 def print_solution_detail(data, manager, routing, solution):
     print("\nSOLUCIÓN\n")
     total_distance = 0
@@ -614,8 +642,8 @@ def print_solution_detail(data, manager, routing, solution):
 
     return listaRutas
 
-"""Método que conseguirá todas las rutas pero no las imprimirá."""
 
+"""Método que conseguirá todas las rutas pero no las imprimirá."""
 def getRutas(data, manager, routing, solution):
     total_distance = 0
     total_load = 0
@@ -674,8 +702,8 @@ def getRutas(data, manager, routing, solution):
 
     return resultado
 
-"""Este método hace print de los KPIs establecidos (WIP)."""
 
+"""Este método hace print de los KPIs establecidos (WIP)."""
 def sacaKPIs(data, limite):
   print("Contenedores casi al límite de su capacidad ({}):".format(limite))
 
@@ -693,8 +721,8 @@ def sacaKPIs(data, limite):
   else:
     print("\nTotal: {0} ({1}%)".format(cont, round((cont*100)/len(data['demands'])), 2))
 
-"""Método que imprime todo lo que haya en un diccionario."""
 
+"""Método que imprime todo lo que haya en un diccionario."""
 def imprimeData(data):
 
   for key in data:
@@ -704,8 +732,8 @@ def imprimeData(data):
     print(data[key])
     print('\n')
 
-"""####Visualización"""
 
+"""####Visualización"""
 def representarContenedores(listaRutas, data, localidad, dia, resultado, demanda):
 
     #Leer coordenadas.
@@ -757,11 +785,11 @@ def representarContenedores(listaRutas, data, localidad, dia, resultado, demanda
     plt.title(listaRutasEditada, y = 1.05,  ha='center')
     plt.show()
 
+
 """### Función principal
 
 Esta función generará las demandas iniciales, así como el aumento diario de forma semi-aleatoria.
 """
-
 def init(nCont):
   estadoI = [0]
   aumentoD = [0]
@@ -780,6 +808,7 @@ def init(nCont):
   aumentoDF = pd.DataFrame(aumentoD)
 
   return estadoDF, aumentoDF
+
 
 def solucionaProblema(data):
   # Crea el gestor de índices y el modelo.
@@ -811,8 +840,8 @@ def solucionaProblema(data):
 
   #return solution, manager, routing
 
-"""#### Funcion"""
 
+"""#### Funcion"""
 def funcion(data, plan, estadoContenedores, aumentoDiario):
   if (len(data['datos'])!=len(plan)):
     raise Exception("El número de contenedores en el plan y en el data no coinciden")
@@ -943,8 +972,8 @@ def funcion(data, plan, estadoContenedores, aumentoDiario):
 
   return costes, results, demandas
 
-"""####FuncionCostes"""
 
+"""####FuncionCostes"""
 def funcionCostes(data, plan, estadoContenedores, aumentoDiario):
   if (len(data['datos'])!=len(plan)):
     raise Exception("El número de contenedores en el plan y en el data no coinciden")
@@ -1026,8 +1055,8 @@ def funcionCostes(data, plan, estadoContenedores, aumentoDiario):
 
   return costes, results
 
-"""### Optimización"""
 
+"""### Optimización"""
 # método que cambia una por otra 
 def cambia(individuo, i, j): 
   # cambairia de  pos 
@@ -1077,6 +1106,7 @@ def suma2(plan, nCont, diaMax):
 
   return plan
 
+
 def optimizacion(planInicial, costeInicial, ncontenedores, estadoContenedores, aumentoDiario, data, iteraciones, imprime = True): 
   plan = []
   resultados = []
@@ -1123,11 +1153,12 @@ def optimizacion(planInicial, costeInicial, ncontenedores, estadoContenedores, a
 
   return planInicial, costeInicial
 
+
 """### Main
 
-Comentario: Introduciendo los parametros de esta forma no tenemos la opción de variar el estado inical o el aumento de cada contenedor de forma individual. Revisar.
+Comentario: Introduciendo los parametros de esta forma no tenemos la opción de variar el estado inical
+o el aumento de cada contenedor de forma individual. Revisar.
 """
-
 #localidad = 'ABADINO'
 #nCamiones = 5
 #capacidadCamiones = 700
