@@ -18,13 +18,18 @@ camiones = [[sg.Text('Número de camiones', size=(15, 1)), sg.InputText()],
 demandas =  [[sg.Text('Llenado inicial', size=(15, 1)), sg.InputText()],
                 [sg.Text('Aumento diario', size=(15, 1)), sg.InputText()]]    
 
-tab4_layout =  []
+dia1 = [[sg.Text('Por ahora nada', size=(15, 1))]]
+dia2 = [[sg.Text('Por ahora nada pero en rojo', size=(25, 1), text_color="red")]]
+
+
+visualizacion = [[sg.TabGroup([[sg.Tab('Día 1', dia1, tooltip='tip'),
+                sg.Tab('Día 2', dia2)]], tooltip='TIP2')]]
 
 layout = [[sg.TabGroup([[sg.Tab('Plan', plan, tooltip='tip'),
                 sg.Tab('Camiones', camiones, tooltip='TIP2'),
-                sg.Tab('Demandas', demandas)]], tooltip='TIP3')],
+                sg.Tab('Demandas', demandas, tooltip='TIP3'),
+                sg.Tab('Visualización', visualizacion)]], tooltip='TIP4')],#Tabs dentro de tab
             [sg.Button('Planificar'), sg.Button('Exit')]]
-
 
 window = sg.Window('Planificador de rutas', layout, grab_anywhere=True)
 
