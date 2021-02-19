@@ -1152,18 +1152,18 @@ def optimizacion(planInicial, costeInicial, ncontenedores, estadoContenedores, a
 
 listaLocalidades = pd.read_csv("https://raw.githubusercontent.com/Jondiii/appContenedores/master/localidades.txt",delimiter=sep, header=header)
 
-#[sg.Text('Localidad', size=(15, 1)), sg.InputText()]
-plan =  [[sg.Text('Localidad')],
-          [sg.Listbox(listaLocalidades, size=(20, 8), key='-COLOR-', enable_events=True)],
-          [sg.Text('Número de días', size=(15, 1)), sg.InputText()]]    
+#Mirar si se puede buscador y lista
+plan =  [[sg.Text('Número de días', size=(15, 1)), sg.InputText()],
+          [sg.Text('Localidad')],
+          [sg.Listbox(listaLocalidades, size=(100, 8), key='-COLOR-', enable_events=True)]]    
 
-camiones = [[sg.Text('Número de camiones', size=(15, 1)), sg.InputText()],
-            [sg.Text('Capacidad de camiones', size=(15, 1)), sg.InputText()],
-            [sg.Text('Velocidad de camiones', size=(15, 1)), sg.InputText()]]       
+camiones = [[sg.Text('Número de camiones', size=(20, 1)), sg.InputText()],
+            [sg.Text('Capacidad de camiones', size=(20, 1)), sg.InputText()],
+            [sg.Text('Velocidad de camiones', size=(20, 1)), sg.InputText()]]       
 
-demandas =  [[sg.Text('Llenado inicial', size=(15, 1)), sg.InputText()],
-                [sg.Text('Aumento diario', size=(15, 1)), sg.InputText()],
-                [sg.Text('Capacidad contenedor', size=(15, 1)), sg.InputText()]]    
+demandas =  [[sg.Text('Llenado inicial', size=(20, 1)), sg.InputText()],
+                [sg.Text('Aumento diario', size=(20, 1)), sg.InputText()],
+                [sg.Text('Capacidad contenedor', size=(20, 1)), sg.InputText()]]    
 
 dia1 = [[sg.Text('Por ahora nada', size=(15, 1))]]
 dia2 = [[sg.Text('Por ahora nada pero en rojo', size=(25, 1), text_color="red")]]
@@ -1189,9 +1189,8 @@ while True:  # Event Loop
     if event == sg.WIN_CLOSED or event == 'Exit':
         break
     if event == 'Planificar': 
-   
-        localidad = values[0]
-        numDias = int(values[1])
+        numDias = int(values[0])
+        localidad = values[1]
         nCamiones = int(values[2])
         capacidadCamiones = values[3]
         velCamiones = int(values[4])
