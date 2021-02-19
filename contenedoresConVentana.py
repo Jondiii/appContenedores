@@ -1155,7 +1155,8 @@ listaLocalidades = pd.read_csv("https://raw.githubusercontent.com/Jondiii/appCon
 #Mirar si se puede buscador y lista
 plan =  [[sg.Text('Número de días', size=(15, 1)), sg.InputText()],
           [sg.Text('Localidad')],
-          [sg.Listbox(listaLocalidades, size=(100, 8), key='-COLOR-', enable_events=True)]]    
+          #[sg.Input(do_not_clear=True, size=(20,1),enable_events=True, key='_INPUT_')],
+          [sg.Listbox(listaLocalidades, select_mode='single', size=(100,8),enable_events=True,  key='_LIST_')]]
 
 camiones = [[sg.Text('Número de camiones', size=(20, 1)), sg.InputText()],
             [sg.Text('Capacidad de camiones', size=(20, 1)), sg.InputText()],
@@ -1182,22 +1183,39 @@ window = sg.Window('Planificador de rutas', layout, grab_anywhere=False)
 
 while True:  # Event Loop
     event, values = window.read()
-    if values['-COLOR-']:    # if something is highlighted in the list
-      sg.popup(f"Your favorite color is {values['-COLOR-'][0]}")
-    
+    #if values['-COLOR-']:    # if something is highlighted in the list
+    #  sg.popup("Your favorite color is {values['-COLOR-'][0]}")
+    #  print(values['-COLOR-'][0])
+    #if values['_INPUT_'] != '':                         # if a keystroke entered in search field
+    #  search = values['_INPUT_']
+    #  new_values = [x for x in listaLocalidades if search in x]  # do the filtering
+    #  window.Element('_LIST_').Update(new_values)     # display in the listbox
+    #else:
+      #  window.Element('_LIST_').Update(listaLocalidades)          # display original unfiltered list
     #print(event, values)
     if event == sg.WIN_CLOSED or event == 'Exit':
         break
+    
     if event == 'Planificar': 
+
+      # if a list item is chosen
+        #NO CONSIGO GUARDAR EL VALOR
+        #EJEMPLOS
+        #https://github.com/PySimpleGUI/PySimpleGUI/issues/1633 
+        localidad = values['_LIST_']
+      
+        print(localidad)
         numDias = int(values[0])
-        localidad = values[1]
-        nCamiones = int(values[2])
-        capacidadCamiones = values[3]
-        velCamiones = int(values[4])
-        llenadoInicial = values[5]
-        aumentoDiario = values[6]
+        #localidad = values[1]
+        #localidad= values['-COLOR-']
+        print(localidad)
+        nCamiones = int(values[1])
+        capacidadCamiones = values[2]
+        velCamiones = int(values[3])
+        llenadoInicial = values[4]
+        aumentoDiario = values[5]
         separadorV = ","
-        capacidadContenedor = values[7]
+        capacidadContenedor = values[6]
 
         
 
