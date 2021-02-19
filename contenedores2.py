@@ -1166,7 +1166,7 @@ def optimizacion(planInicial, costeInicial, ncontenedores, estadoContenedores, a
 Comentario: Introduciendo los parametros de esta forma no tenemos la opción de variar el estado inical
 o el aumento de cada contenedor de forma individual. Revisar.
 """
-
+# Introducimos variables a mano
 localidad = 'ABADINO'
 nCamiones = 5
 capacidadCamiones = 700
