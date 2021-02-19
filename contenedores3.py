@@ -1,3 +1,7 @@
+#COMENTARIOS: creo que se ejecuta dos veces. Sale la ruta del día 1 y cuando cierras la ventana la del día 2
+
+#Falta conectarlo con la ventana ahora mismo los datos se introducen directamente en el código
+
 from __future__ import print_function
 from ortools.constraint_solver import routing_enums_pb2
 from ortools.constraint_solver import pywrapcp
