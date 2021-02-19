@@ -1150,17 +1150,21 @@ def optimizacion(planInicial, costeInicial, ncontenedores, estadoContenedores, a
 
   return planInicial, costeInicial
 
+ #listaLocalidades = pd.read_csv("",delimiter=sep, header=header, names=nom_col)
 
 
-plan =  [[sg.Text('Localidad', size=(15, 1)), sg.InputText()],
-                [sg.Text('Número de días', size=(15, 1)), sg.InputText()]]    
+#[sg.Text('Localidad', size=(15, 1)), sg.InputText()]
+plan =  [[sg.Text('Localidad')],
+          [sg.Listbox(listaLocalidades, size=(15, len(10)), key='-COLOR-', enable_events=True)],
+          [sg.Text('Número de días', size=(15, 1)), sg.InputText()]]    
 
 camiones = [[sg.Text('Número de camiones', size=(15, 1)), sg.InputText()],
             [sg.Text('Capacidad de camiones', size=(15, 1)), sg.InputText()],
             [sg.Text('Velocidad de camiones', size=(15, 1)), sg.InputText()]]       
 
 demandas =  [[sg.Text('Llenado inicial', size=(15, 1)), sg.InputText()],
-                [sg.Text('Aumento diario', size=(15, 1)), sg.InputText()]]    
+                [sg.Text('Aumento diario', size=(15, 1)), sg.InputText()],
+                [sg.Text('Capacidad contenedor', size=(15, 1)), sg.InputText()]]    
 
 dia1 = [[sg.Text('Por ahora nada', size=(15, 1))]]
 dia2 = [[sg.Text('Por ahora nada pero en rojo', size=(25, 1), text_color="red")]]
@@ -1175,10 +1179,11 @@ layout = [[sg.TabGroup([[sg.Tab('Plan', plan, tooltip='tip'),
                 sg.Tab('Visualización', visualizacion)]], tooltip='TIP4')],#Tabs dentro de tab
             [sg.Button('Planificar'), sg.Button('Exit')]]
 
-window = sg.Window('Planificador de rutas', layout, grab_anywhere=True)
+window = sg.Window('Planificador de rutas', layout, grab_anywhere=False)
 
 while True:  # Event Loop
     event, values = window.read()
+    
     #print(event, values)
     if event == sg.WIN_CLOSED or event == 'Exit':
         break
@@ -1191,7 +1196,7 @@ while True:  # Event Loop
         llenadoInicial = values[5]
         aumentoDiario = values[6]
         separadorV = ","
-        capacidadContenedor = 1100
+        capacidadContenedor = values[7]
 
         print(localidad, nCamiones, capacidadCamiones,  velCamiones, llenadoInicial, aumentoDiario, numDias)    # the input data looks like a simple list when auto numbered
         """### Main
