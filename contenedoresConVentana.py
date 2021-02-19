@@ -1154,7 +1154,7 @@ listaLocalidades = pd.read_csv("https://raw.githubusercontent.com/Jondiii/appCon
 
 #[sg.Text('Localidad', size=(15, 1)), sg.InputText()]
 plan =  [[sg.Text('Localidad')],
-          [sg.Listbox(listaLocalidades, size=(15, 8), key='-COLOR-', enable_events=True)],
+          [sg.Listbox(listaLocalidades, size=(20, 8), key='-COLOR-', enable_events=True)],
           [sg.Text('Número de días', size=(15, 1)), sg.InputText()]]    
 
 camiones = [[sg.Text('Número de camiones', size=(15, 1)), sg.InputText()],
