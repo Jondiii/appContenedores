@@ -1150,12 +1150,11 @@ def optimizacion(planInicial, costeInicial, ncontenedores, estadoContenedores, a
 
   return planInicial, costeInicial
 
- #listaLocalidades = pd.read_csv("",delimiter=sep, header=header, names=nom_col)
-
+listaLocalidades = pd.read_csv("https://raw.githubusercontent.com/Jondiii/appContenedores/master/localidades.txt",delimiter=sep, header=header)
 
 #[sg.Text('Localidad', size=(15, 1)), sg.InputText()]
 plan =  [[sg.Text('Localidad')],
-          [sg.Listbox(listaLocalidades, size=(15, len(10)), key='-COLOR-', enable_events=True)],
+          [sg.Listbox(listaLocalidades, size=(15, 8), key='-COLOR-', enable_events=True)],
           [sg.Text('Número de días', size=(15, 1)), sg.InputText()]]    
 
 camiones = [[sg.Text('Número de camiones', size=(15, 1)), sg.InputText()],
@@ -1183,11 +1182,14 @@ window = sg.Window('Planificador de rutas', layout, grab_anywhere=False)
 
 while True:  # Event Loop
     event, values = window.read()
+    if values['-COLOR-']:    # if something is highlighted in the list
+      sg.popup(f"Your favorite color is {values['-COLOR-'][0]}")
     
     #print(event, values)
     if event == sg.WIN_CLOSED or event == 'Exit':
         break
     if event == 'Planificar': 
+   
         localidad = values[0]
         numDias = int(values[1])
         nCamiones = int(values[2])
@@ -1197,6 +1199,8 @@ while True:  # Event Loop
         aumentoDiario = values[6]
         separadorV = ","
         capacidadContenedor = values[7]
+
+        
 
         print(localidad, nCamiones, capacidadCamiones,  velCamiones, llenadoInicial, aumentoDiario, numDias)    # the input data looks like a simple list when auto numbered
         """### Main
