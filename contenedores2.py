@@ -31,6 +31,11 @@ pd.options.mode.chained_assignment = None
 #pip install pandas
 #pip install sklearn
 #pip install matplotlib
+#pip install geopandas --> instalar fiona y GDA antes!! --> https://stackoverflow.com/questions/50876702/cant-install-fiona-on-windows
+#pip install cython
+#pip install cartoply
+#pip install contextily --> buena suerte instalando esto si usas Windows. Con Mac y Ubuntu al parecer es fácil.S
+
 
 # CÓDIGO DESCARGADO 
 # simplemente se han borrado los comentarios no necesarios y ordenado un poco todo
