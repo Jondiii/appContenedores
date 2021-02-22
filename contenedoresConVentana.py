@@ -1152,11 +1152,18 @@ def optimizacion(planInicial, costeInicial, ncontenedores, estadoContenedores, a
 
 listaLocalidades = pd.read_csv("https://raw.githubusercontent.com/Jondiii/appContenedores/master/localidades.txt",delimiter=sep, header=header)
 
+
 #Mirar si se puede buscador y lista
 plan =  [[sg.Text('Número de días', size=(15, 1)), sg.InputText()],
           [sg.Text('Localidad')],
           #[sg.Input(do_not_clear=True, size=(20,1),enable_events=True, key='_INPUT_')],
-          [sg.Listbox(listaLocalidades, select_mode='single', size=(100,8),enable_events=True,  key='_LIST_')]]
+          #Lista 
+          [sg.Listbox(listaLocalidades, select_mode='single', size=(100,8),enable_events=True,  key='Seleccionar')],
+          #No es necesario, es un intento para ver si detecta el valor
+          [sg.Button('Seleccionar')]]
+          #Otra opción qe igual es mejor
+          #[sg.Combo(listaLocalidades, size=(15, 1), key='_LIST_')]]
+  
 
 camiones = [[sg.Text('Número de camiones', size=(20, 1)), sg.InputText()],
             [sg.Text('Capacidad de camiones', size=(20, 1)), sg.InputText()],
@@ -1202,12 +1209,15 @@ while True:  # Event Loop
         #NO CONSIGO GUARDAR EL VALOR
         #EJEMPLOS
         #https://github.com/PySimpleGUI/PySimpleGUI/issues/1633 
-        localidad = values['_LIST_']
+        #Pensado para el botón pero no parece funcionar
+        if event == 'Seleccionar': 
+          localidad = values
+          print(localidad)
       
-        print(localidad)
+        
         numDias = int(values[0])
         #localidad = values[1]
-        #localidad= values['-COLOR-']
+        #localidad= values['Seleccionar']
         print(localidad)
         nCamiones = int(values[1])
         capacidadCamiones = values[2]
