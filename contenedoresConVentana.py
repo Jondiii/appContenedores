@@ -1155,16 +1155,9 @@ listaLocalidades = pd.read_csv("https://raw.githubusercontent.com/Jondiii/appCon
 
 #Mirar si se puede buscador y lista
 plan =  [[sg.Text('Número de días', size=(15, 1)), sg.InputText()],
-          [sg.Text('Localidad')],
-          #[sg.Input(do_not_clear=True, size=(20,1),enable_events=True, key='_INPUT_')],
-          #Lista 
-          [sg.Listbox(listaLocalidades, select_mode='single', size=(100,8),enable_events=True,  key='Seleccionar')],
-          #No es necesario, es un intento para ver si detecta el valor
-          [sg.Button('Seleccionar')]]
-          #Otra opción qe igual es mejor
-          #[sg.Combo(listaLocalidades, size=(15, 1), key='_LIST_')]]
-  
-
+          [sg.Text('Localidad',size=(15, 1)), sg.InputText()]]
+   
+     
 camiones = [[sg.Text('Número de camiones', size=(20, 1)), sg.InputText()],
             [sg.Text('Capacidad de camiones', size=(20, 1)), sg.InputText()],
             [sg.Text('Velocidad de camiones', size=(20, 1)), sg.InputText()]]       
@@ -1190,42 +1183,21 @@ window = sg.Window('Planificador de rutas', layout, grab_anywhere=False)
 
 while True:  # Event Loop
     event, values = window.read()
-    #if values['-COLOR-']:    # if something is highlighted in the list
-    #  sg.popup("Your favorite color is {values['-COLOR-'][0]}")
-    #  print(values['-COLOR-'][0])
-    #if values['_INPUT_'] != '':                         # if a keystroke entered in search field
-    #  search = values['_INPUT_']
-    #  new_values = [x for x in listaLocalidades if search in x]  # do the filtering
-    #  window.Element('_LIST_').Update(new_values)     # display in the listbox
-    #else:
-      #  window.Element('_LIST_').Update(listaLocalidades)          # display original unfiltered list
-    #print(event, values)
+
     if event == sg.WIN_CLOSED or event == 'Exit':
         break
     
     if event == 'Planificar': 
-
-      # if a list item is chosen
-        #NO CONSIGO GUARDAR EL VALOR
-        #EJEMPLOS
-        #https://github.com/PySimpleGUI/PySimpleGUI/issues/1633 
-        #Pensado para el botón pero no parece funcionar
-        if event == 'Seleccionar': 
-          localidad = values
-          print(localidad)
-      
-        
+ 
         numDias = int(values[0])
-        #localidad = values[1]
-        #localidad= values['Seleccionar']
-        print(localidad)
-        nCamiones = int(values[1])
-        capacidadCamiones = values[2]
-        velCamiones = int(values[3])
-        llenadoInicial = values[4]
-        aumentoDiario = values[5]
+        localidad = values[1]   
+        nCamiones = int(values[2])
+        capacidadCamiones = values[3]
+        velCamiones = int(values[4])
+        llenadoInicial = values[5]
+        aumentoDiario = values[6]
         separadorV = ","
-        capacidadContenedor = values[6]
+        capacidadContenedor = values[7]
 
         
 
@@ -1238,7 +1210,8 @@ while True:  # Event Loop
         #nCamiones = 5
         #capacidadCamiones = 700
         depot = 0
-        print(localidad)
+
+       
 
         capacidadCamiones = fromCharToString(procesaVector(capacidadCamiones,separadorV))
         data = create_data_model2(localidad, capacidadCamiones, nCamiones, depot)
