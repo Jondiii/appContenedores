@@ -1192,12 +1192,12 @@ while True:  # Event Loop
         numDias = int(values[0])
         localidad = values[1]   
         nCamiones = int(values[2])
-        capacidadCamiones = values[3]
+        capacidadCamiones = (values[3])
         velCamiones = int(values[4])
         llenadoInicial = values[5]
         aumentoDiario = values[6]
         separadorV = ","
-        capacidadContenedor = values[7]
+        capacidadContenedor = int(values[7])
 
         
 

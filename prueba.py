@@ -41,9 +41,9 @@ plan =  [[sg.Text('Número de días', size=(15, 1)), sg.InputText()],
           [sg.Text('Localidad')],
           [sg.Input(size=(20, 1), enable_events=True, key='-INPUT-')],
           #Lista 
-          [sg.Listbox(listaLocalidades, size=(100,8),bind_return_key=True,change_submits=True,enable_events=True, key='-LIST-')]]
+          [sg.Listbox(values = listaLocalidades, size=(100,8),enable_events=True, key='-LIST-')]]
           #No es necesario, es un intento para ver si detecta el valor
-          
+          #[sg.Listbox(values=listaLocalidades, size=(100, 8), key='-LIST-', enable_events=True,bind_return_key=True)]]
           #Otra opción qe igual es mejor
           #[sg.Combo(listaLocalidades, size=(15, 1), key='_LIST_')]]
   
@@ -70,27 +70,26 @@ layout = [[sg.TabGroup([[sg.Tab('Plan', plan, tooltip='tip'),
             [sg.Button('Planificar'), sg.Button('Exit')]]
 
 window = sg.Window('Planificador de rutas', layout, grab_anywhere=False).Finalize()
-window.find_element('-LIST-', silent_on_error = False).Update()
 
 
 while True:  # Event Loop
     event, values = window.read()
+    localidad = []
   
-    if event == sg.WIN_CLOSED or event == 'Exit':
-        break
-    '''
+    
     if values['-INPUT-'] != '':                         # if a keystroke entered in search field
         search = values['-INPUT-']
         new_values = [x for x in listaLocalidades if search in x]  # do the filtering
         window['-LIST-'].update(new_values)    # display original unfiltered list
-    else:
-        window['-LIST-'].update(listaLocalidades)  # display in the listbox
-    '''    
-    if event == '-LIST-' and len(values['-LIST-']):
-        sg.popup('Selected ', values['-LIST-'])
-   
-   
+    else: 
+        window['-LIST-'].update(listaLocalidades)
+        localidad = values['-LIST-']
+    
 
+
+   
+            
+    
     if event == 'Planificar': 
 
       # if a list item is chosen
@@ -100,23 +99,24 @@ while True:  # Event Loop
         #Pensado para el botón pero no parece funcionar
     
         
-        
+       
         numDias = int(values[0])
         #localidad = values[1]
         #localidad = l[0]
-        localidad = values['-LIST-']
-        print(localidad)
-        nCamiones = int(values[2])
-        capacidadCamiones = values[3]
-        velCamiones = int(values[4])
-        llenadoInicial = values[5]
-        aumentoDiario = values[6]
         
-        capacidadContenedor = values[7]
+        print(localidad)
+        nCamiones = int(values[1])
+        capacidadCamiones = values[2]
+        velCamiones = int(values[3])
+        llenadoInicial = values[4]
+        aumentoDiario = values[5]
+        capacidadContenedor = int(values[6])
         print(values)
         
 
         print(localidad, nCamiones, capacidadCamiones,  velCamiones, llenadoInicial, aumentoDiario, numDias)    # the input data looks like a simple list when auto numbered
   
+    if event == sg.WIN_CLOSED or event == 'Exit':
+        break
 
 window.close()
