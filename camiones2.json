@@ -1,0 +1,32 @@
+{
+  "1": {
+    "capacidad": 2000,
+    "valocidad": 20,
+    "funcionando": true
+  },
+  "2": {
+    "capacidad": 2000,
+    "valocidad": 20,
+    "funcionando": true
+  },
+  "3": {
+    "capacidad": 2000,
+    "valocidad": 20,
+    "funcionando": true
+  },
+  "4": {
+    "capacidad": 2000,
+    "valocidad": 20,
+    "funcionando": true
+  },
+  "5": {
+    "capacidad": 2000,
+    "valocidad": 20,
+    "funcionando": true
+  },
+  "6": {
+    "capacidad": 2000,
+    "valocidad": 20,
+    "funcionando": true
+  }
+}
