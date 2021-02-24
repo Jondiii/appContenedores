@@ -23,6 +23,8 @@ import geopandas as gpd
 import matplotlib.pyplot as plt
 import contextily as ctx
 from shapely.geometry import Point
+import requests
+
 
 #Interesting links with examples 
 #https://realpython.com/pysimplegui-python/
@@ -63,6 +65,9 @@ dia2 = [[sg.Text('Por ahora nada pero en rojo', size=(25, 1), text_color="red")]
 visualizacion = [[sg.TabGroup([[sg.Tab('Día 1', dia1, tooltip='tip'),
                 sg.Tab('Día 2', dia2)]], tooltip='TIP2')]]
 
+
+
+
 layout = [[sg.TabGroup([[sg.Tab('Plan', plan, tooltip='tip'),
                 sg.Tab('Camiones', camiones, tooltip='TIP2'),
                 sg.Tab('Demandas', demandas, tooltip='TIP3'),
@@ -84,11 +89,6 @@ while True:  # Event Loop
     else: 
         window['-LIST-'].update(listaLocalidades)
         localidad = values['-LIST-']
-    
-
-
-   
-            
     
     if event == 'Planificar': 
 
