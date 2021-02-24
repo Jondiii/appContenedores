@@ -1,0 +1,34 @@
+{
+  
+  "camion 1": {
+    "capacidad": 2000,
+    "valocidad": 20,
+    "funcionando": true
+  },
+    "camion 2": {
+    "capacidad": 2000,
+    "valocidad": 20,
+    "funcionando": true
+  },
+    "camion 3": {
+    "capacidad": 2000,
+    "valocidad": 20,
+    "funcionando": true
+  },
+    "camion 4": {
+    "capacidad": 2000,
+    "valocidad": 20,
+    "funcionando": true
+  },
+    "camion 5": {
+    "capacidad": 2000,
+    "valocidad": 20,
+    "funcionando": true
+  },
+    "camion 6": {
+    "capacidad": 2000,
+    "valocidad": 20,
+    "funcionando": true
+  }
+  
+}
