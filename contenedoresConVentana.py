@@ -44,13 +44,9 @@ pd.options.mode.chained_assignment = None
 metodoBusqueda = routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC
 #Otro algotimo que parece ser más rápido
 #metodoBusqueda = routing_enums_pb2.FirstSolutionStrategy.PARALLEL_CHEAPEST_INSERTION
-
-
-
 header = 0
 nom_col = ["id","UDALERRIA_KODEA/COD_MUNICIPIO","UDALERRIA/MUNICIPIO","EKITALDIA/EJERCICIO","EDUKIONTZI_KODEA/COD_CONTENEDOR","EDUKIONTZIAREN MODELOA_CAS/MODELO CONTENEDOR_CAS","HONDAKINAREN FRAKZIOA_CAS/FRACCION DEL RESIDUO_CAS","longitude","latitude", "horaMin", "horaMax"]
 sep = ','
-
 
 
 def leerDatos(localidad):
@@ -128,46 +124,7 @@ def create_data_model2(localidad, capacidadCamiones, ncamiones, depot):
     return data
 
 """#### Métodos matriz de distancias
-
-Segundo método. Se tiene en cuenta el radio de la Tierra y otros factores a la hora de aplicar la transformación de las coordenadas.
 """
-
-def crearMatrizCoordenadas2(datos):
-  longitud = datos['longitude'].to_numpy()
-  latitud = datos['latitude'].to_numpy()
-  #Transformamos de UTM a Coordenadas Geográficas (Grados)
-  scrProj = pyproj.Proj(proj="utm", zone = 30, ellps="WGS84", units = "m")
-  dstProj = pyproj.Proj(proj = "longlat", ellps="WGS84", datum = "WGS84")
-
-  i = 0
-  for n in datos['latitude']:
-    longitud[i],latitud[i]=pyproj.transform(scrProj,dstProj, longitud[i],latitud[i])
-    i +=1
-
-  #Pasamos a radianes para poder hacer unas operaciones más adelante
-  latitud = np.radians(latitud.astype(float))
-  longitud = np.radians(longitud.astype(float))
-
-  #GRADOS
-  summary_df = pd.DataFrame({'id':datos['id'],'lat':datos['latitude'],'lon':datos['longitude']})
-
-
-  #RADIANES
-
-  summary2= pd.DataFrame({'id':datos['id'],'lat':latitud,'lon':longitud})
-
-
-  dist = DistanceMetric.get_metric('manhattan')
-
-  #Creamos una matrix bidimensional que contenga tanto la latitud como la longitud
-  #6372 es el valor del radio de la tierra usando KM
-  #3798 es el valor que tendriamos que usar si lo queremos en Millas
-
-  df = dist.pairwise(summary2[['lat','lon']].to_numpy())*6372000
-  
-  df1 = pd.DataFrame (data = df, index = datos['id'], columns = datos['id'])
-  
-  return df
 
 """La matriz de coordenadas es la siguente (las distancias se miden en m)
 
@@ -1033,49 +990,6 @@ def funcionCostes(data, plan, estadoContenedores, aumentoDiario, capacidadTotal)
 
 """### Optimización"""
 
-# ESQUELETO 
-# generar un plan aleatorio 
-# sacar coste de este plan COSTE-INICIAL
-# crear un bucle que repita este proceso x veces
-
-  # cambiar el plan, intercambiando los valores de dos contenedores. 
-  # calcular el coste de este plan 
-  # guardar resultado en un dataFrame RESULTADOS
-
-# cuando estén cambiados todos 
-# sacar el coste min del dataFrame RESULTADOS  - COSTE-MIN
-# comparar minimo con el generado inicialmente con el random 
-
-# si COSTE-MIN < COSTE-INICIAL
-  # COSTE-INICIAL = COSTE-MIN
-  # i ++ 
-  # repetimos todo 
-# cuando se de el caso de que COSTE-MIN => COSTE-INICIAL
-# PARAR. Este será el minimo.
-
-# estos son los que tenemos que pensar para ver como optimizar
-
-# método que cambia una por otra 
-def cambia(individuo, i, j): 
-  # cambairia de  pos 
-  individuo[c(j,i)] = individuo[c(i,j)]
-  return individuo 
-
-
-#añadirle condiciones para que no sea 0 o menos 
-#no puede ser mayor que el numDias ? 
-def suma(individuo, i, diaMax): 
-  # suma uno al 1º ind 
-  individuo[0][i] = individuo[0][i] + 1
-  # resta uno al 2º 
-  individuo[0][i+1] = individuo[0][i+1] - 1
-  # Si alguno es 0 o menor se pone para recoger el primer día
-  individuo[0][np.where(individuo<=0)[0]] = 1
-  # Si alguno es mayor que el día máximo se pone a recoger para el último día
-  individuo[0][np.where(individuo>diaMax)[0]] = diaMax
-
-  return individuo
-
 # Otro método que suma o resta 1 de forma semi aleatoria.
 def suma2(plan, nCont, diaMax):
   rng = np.random.default_rng()# Poner un 1 en el paréntesis para que siempre salgan los mismos valores.
@@ -1153,6 +1067,12 @@ def optimizacion(planInicial, costeInicial, ncontenedores, estadoContenedores, a
 listaLocalidades = pd.read_csv("https://raw.githubusercontent.com/Jondiii/appContenedores/master/localidades.txt",delimiter=sep, header=header)
 
 
+'''
+------------------------------------
+          V E N T A N A   
+------------------------------------
+'''
+
 #Mirar si se puede buscador y lista
 plan =  [[sg.Text('Número de días', size=(15, 1)), sg.InputText()],
           [sg.Text('Localidad',size=(15, 1)), sg.InputText()]]
@@ -1211,8 +1131,7 @@ while True:  # Event Loop
         #capacidadCamiones = 700
         depot = 0
 
-       
-
+      
         capacidadCamiones = fromCharToString(procesaVector(capacidadCamiones,separadorV))
         data = create_data_model2(localidad, capacidadCamiones, nCamiones, depot)
 
