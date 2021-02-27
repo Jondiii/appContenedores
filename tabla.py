@@ -26,6 +26,7 @@ from shapely.geometry import Point
 import requests
 import random
 import string
+import urllib, json
 
 # No funciona pero he creado este file apra ir haciendo pruebas de la tabla para no estropear la otra venta
 # pongo links a un git con ejemplos de tablas: 
@@ -34,33 +35,39 @@ import string
 # https://github.com/PySimpleGUI/PySimpleGUI/blob/master/DemoPrograms/Demo_Table_Pandas.py
 
 
-url = "https://github.com/Jondiii/appContenedores/blob/master/camiones2.json"
+def dfToList(dataFrame, ceros = False):
+  primeraVez = True
+  if dataFrame.shape[1] != 1:
+    print("El dataFrame no tiene una única fila.")
+
+  else:
+    lista = []
+    for n in dataFrame.values.tolist():
+      if (n[0] != np.nan) & (not ceros):
+        lista.append(n[0])
+      else:
+        if (ceros & ((n[0] != np.nan) & ((n[0] != 0) or primeraVez))):
+          lista.append(n[0])
+          primeraVez = False
+
+    return lista
+
+headers = ['Camión','Capacidad','Velocidad','Funcionando']
 
 
-r = requests.get(url)
-data = pd.DataFrame(r.json())
-print (data)
+data = pd.read_csv('https://raw.githubusercontent.com/Jondiii/appContenedores/master/file.csv', delimiter=',', header=0, names=headers)
+datos = data.values.tolist() 
+print(datos)
 
-print (data['1'])
-
-
-
-
-headings = ['Camión','Capacidad','Velocidad', 'Funcionando']
-#df = pd.DataFrame (data, columns = ['Camión','Capacidad','Veloidad', 'Funcionando'])
-#print(df)
-
-
-
-
-
-layout = [[sg.Table(values=data,
-                        headings=headings,
-                        max_col_width=50,
+layout = [[sg.Table(key='-TABLE-', values=datos,
+                        headings=headers,
+                        max_col_width=25,
                         auto_size_columns=True,
                         justification='right',
                         # alternating_row_color='lightblue',
-                        num_rows=min(len(data), 20))]]
+                        num_rows=min(len(data), 20))], 
+                [sg.Button('Delete'), sg.Button('Add')]] 
+
 
 
 window = sg.Window('Table', layout, grab_anywhere=False)
