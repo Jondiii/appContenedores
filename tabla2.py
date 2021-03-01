@@ -31,7 +31,7 @@ import csv
 
 headers = ['Camión','Capacidad','Velocidad','Funcionando']
 
-data = pd.read_csv('https://raw.githubusercontent.com/Jondiii/appContenedores/master/file.csv', delimiter=',', header=0, names=headers)
+data = pd.read_csv('https://raw.githubusercontent.com/Jondiii/appContenedores/master/test.csv', delimiter=',', header=0, names=headers)
 
 datos = data.values.tolist() 
 print(datos)
