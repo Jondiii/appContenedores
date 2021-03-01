@@ -57,7 +57,7 @@ def leerDatos(localidad):
 
     return datos
 
-def trasnformaCoordenadas(datos):
+def getCoordenadas(datos):
     longitud = datos['longitude'].to_numpy()
     latitud = datos['latitude'].to_numpy()
     #Transformamos de UTM a Coordenadas Geográficas (Grados)
@@ -69,13 +69,9 @@ def trasnformaCoordenadas(datos):
         longitud[i],latitud[i]=pyproj.transform(scrProj,dstProj, longitud[i],latitud[i])
         i +=1
 
-    datos['longitude'] = longitud
-    datos['latitude'] = latitud
-
-    return datos
+    return latitud, longitud
 
 def get_route(rutas, lat, longi):
-
     stringRutas = []
     for ruta in rutas:
         strRuta = ""
@@ -86,54 +82,66 @@ def get_route(rutas, lat, longi):
         stringRutas.append(strRuta)
  
     url = 'http://router.project-osrm.org/route/v1/driving/'+stringRutas[0]+'?annotations=distance,duration'
-    print(stringRutas[0])
+
     r = requests.get(url)
     res = r.json()
 
     routes = polyline.decode(res['routes'][0]['geometry'])
-    start_point = [res['waypoints'][0]['location'][1], res['waypoints'][0]['location'][0]]
-    end_point = [res['waypoints'][1]['location'][1], res['waypoints'][1]['location'][0]]
+    depot = [res['waypoints'][0]['location'][1], res['waypoints'][0]['location'][0]]
     distance = res['routes'][0]['distance']
     
     out = {'route':routes,
-           'start_point':start_point,
-           'end_point':end_point,
-           'distance':distance
+           'depot':depot,
+           'distance':distance,
+           'rutas':rutas,
+           'lat':lat,
+           'long':longi
           }
 
     return out
 
-def get_map(route):
-    m = folium.Map(location=[(route['start_point'][0] + route['end_point'][0])/2, 
-                             (route['start_point'][1] + route['end_point'][1])/2], 
+def get_map(out):
+    m = folium.Map(location=[(out['depot'][0] + out['depot'][0])/2, 
+                             (out['depot'][1] + out['depot'][1])/2], 
                    zoom_start=13)
 
     folium.PolyLine(
-        route['route'],
+        out['route'],
         weight=8,
         color='blue',
         opacity=0.6
     ).add_to(m)
 
     folium.Marker(
-        location=route['start_point'],
+        location=out['depot'],
         icon=folium.Icon(icon='play', color='green')
     ).add_to(m)
 
-    folium.Marker(
-        location=route['end_point'],
-        icon=folium.Icon(icon='stop', color='red')
-    ).add_to(m)
+    locations = {
+        'lat': out['lat'],
+        'long': out['long']
+    }
+
+    locationList = pd.DataFrame(locations)
+    locationList = locationList.values.tolist()
+
+    for ruta in out['rutas']:
+        i = 0
+        for point in ruta:
+            i += 1
+            folium.Marker(
+                locationList[point], tooltip=str(i-1)
+            ).add_to(m)
 
     return m
 
+    
 localidad = 'ABADINO'
 
 datos = leerDatos(localidad)
-datos = trasnformaCoordenadas(datos)
-
-route = get_route(listaRutas1, datos["latitude"], datos["longitude"])
-mapa = get_map(route)
+latitud, longitud = getCoordenadas(datos)
+output = get_route(listaRutas1, latitud, longitud)
+mapa = get_map(output)
 #https://www.thinkdatascience.com/post/2020-03-03-osrm/osrm/
 
 #De momento solo crea un html en el directorio local.
