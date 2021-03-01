@@ -27,6 +27,7 @@ import requests
 import random
 import string
 import urllib, json
+import csv
 
 headers = ['Camión','Capacidad','Velocidad','Funcionando']
 
@@ -39,6 +40,18 @@ def getSelectedItemData():
     for currentItem  in tableWidget.selectedItems():
         print("Row : "+str(currentItem.row())+" Column : "+str(currentItem.column())+" "+currentItem.text())
         
+        datos[currentItem.row()][currentItem.column()] = int(currentItem.text())
+        #data.loc[currentItem.row(), currentItem.column()] = currentItem.text()
+        print(datos)
+        with open("test.csv", "w", newline='') as f:
+            writer = csv.writer(f, delimiter=',')
+            writer.writerow(headers) # write the header
+            # write the actual content line by line
+            for d in datos:
+                writer.writerow(d)
+
+        #datos[currentItem.row()][currentItem.column()] = currentItem.text()
+
 app=QApplication(sys.argv)
 
 qwidget=QWidget()
@@ -49,7 +62,7 @@ qwidget.resize(600,400)
 layout=QVBoxLayout()
 
 tableWidget=QTableWidget()
-tableWidget.setColumnCount(len(headers)+1)
+tableWidget.setColumnCount(len(headers))
 tableWidget.setRowCount(len(datos)+1)
 
 #adding item in table
@@ -59,10 +72,9 @@ for h in headers:
     tableWidget.setHorizontalHeaderItem(i,QTableWidgetItem(h))
     
     cont = 0
-    while cont < len(datos)-1: 
-        #print(datos[i][cont])
-        #no lo representa en la tabla
-        tableWidget.setItem(i,cont,QTableWidgetItem(datos[i][cont]))
+    while cont < len(datos) - 1: 
+        #no pilla el último
+        tableWidget.setItem(i,cont,QTableWidgetItem(str(datos[i][cont])))
         cont += 1
     i += 1
 
@@ -73,4 +85,7 @@ layout.addWidget(tableWidget)
 qwidget.setLayout(layout)
 qwidget.show()
 
+
+
 sys.exit(app.exec_())
+
