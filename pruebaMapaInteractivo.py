@@ -71,17 +71,14 @@ def getCoordenadas(datos):
 
     return latitud, longitud
 
-def get_route(rutas, lat, longi):
-    stringRutas = []
-    for ruta in rutas:
-        strRuta = ""
-        for contenedor in ruta:
-            strRuta = strRuta + str(longi[contenedor]) + "," + str(lat[contenedor]) + ";"
+def get_route(ruta, lat, longi):
+    strRuta = ""
+    for contenedor in ruta:
+        strRuta = strRuta + str(longi[contenedor]) + "," + str(lat[contenedor]) + ";"
 
-        strRuta = strRuta[:-1]
-        stringRutas.append(strRuta)
+    strRuta = strRuta[:-1]
  
-    url = 'http://router.project-osrm.org/route/v1/driving/'+stringRutas[0]+'?annotations=distance,duration'
+    url = 'http://router.project-osrm.org/route/v1/driving/'+strRuta+'?annotations=distance,duration'
 
     r = requests.get(url)
     res = r.json()
@@ -93,56 +90,65 @@ def get_route(rutas, lat, longi):
     out = {'route':routes,
            'depot':depot,
            'distance':distance,
-           'rutas':rutas,
+           'ruta':ruta,
            'lat':lat,
            'long':longi
           }
 
     return out
 
-def get_map(out):
-    m = folium.Map(location=[(out['depot'][0] + out['depot'][0])/2, 
-                             (out['depot'][1] + out['depot'][1])/2], 
-                   zoom_start=13)
+def get_map(localidad, rutas):
+    datos = leerDatos(localidad)
+    lat, longi = getCoordenadas(datos)
+    mapas = []
 
-    folium.PolyLine(
-        out['route'],
-        weight=8,
-        color='blue',
-        opacity=0.6
-    ).add_to(m)
+    for ruta in rutas:
+        out = get_route(ruta, lat, longi)
 
-    folium.Marker(
-        location=out['depot'],
-        icon=folium.Icon(icon='play', color='green')
-    ).add_to(m)
+        m = folium.Map(location=[(out['depot'][0] + out['depot'][0])/2, 
+                                (out['depot'][1] + out['depot'][1])/2], 
+                    zoom_start=13)
 
-    locations = {
-        'lat': out['lat'],
-        'long': out['long']
-    }
+        folium.PolyLine(
+            out['route'],
+            weight=8,
+            color='blue',
+            opacity=0.6
+        ).add_to(m)
 
-    locationList = pd.DataFrame(locations)
-    locationList = locationList.values.tolist()
+        folium.Marker(
+            location=out['depot'],
+            icon=folium.Icon(icon='play', color='green')
+        ).add_to(m)
 
-    for ruta in out['rutas']:
+        locations = {
+            'lat': out['lat'],
+            'long': out['long']
+        }
+
+        locationList = pd.DataFrame(locations)
+        locationList = locationList.values.tolist()
+            
         i = 0
-        for point in ruta:
+        for point in out['ruta']:
             i += 1
             folium.Marker(
                 locationList[point], tooltip=str(i-1)
             ).add_to(m)
 
-    return m
+        mapas.append(m)
+
+    return mapas
 
     
 localidad = 'ABADINO'
 
-datos = leerDatos(localidad)
-latitud, longitud = getCoordenadas(datos)
-output = get_route(listaRutas1, latitud, longitud)
-mapa = get_map(output)
+mapas = get_map(localidad, listaRutas2)
 #https://www.thinkdatascience.com/post/2020-03-03-osrm/osrm/
 
+i = 0
+for mapa in mapas:
+    i += 1
+    mapa.save(localidad+" - dia "+str(i)+".html")
+
 #De momento solo crea un html en el directorio local.
-mapa.save(localidad+".html")
