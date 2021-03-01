@@ -33,7 +33,8 @@ import urllib, json
 # https://github.com/PySimpleGUI/PySimpleGUI/blob/master/DemoPrograms/Demo_Table_CSV.py
 # https://github.com/PySimpleGUI/PySimpleGUI/blob/master/DemoPrograms/Demo_Table_Simulation.py
 # https://github.com/PySimpleGUI/PySimpleGUI/blob/master/DemoPrograms/Demo_Table_Pandas.py
-
+#EDITABLE pero con Plotly
+# https://dash.plotly.com/datatable/editable
 
 def dfToList(dataFrame, ceros = False):
   primeraVez = True
@@ -56,6 +57,7 @@ headers = ['Camión','Capacidad','Velocidad','Funcionando']
 
 
 data = pd.read_csv('https://raw.githubusercontent.com/Jondiii/appContenedores/master/file.csv', delimiter=',', header=0, names=headers)
+
 datos = data.values.tolist() 
 print(datos)
 
@@ -66,11 +68,28 @@ layout = [[sg.Table(key='-TABLE-', values=datos,
                         justification='right',
                         # alternating_row_color='lightblue',
                         num_rows=min(len(data), 20))], 
-                [sg.Button('Delete'), sg.Button('Add')]] 
+                [sg.Button('Delete'), sg.Button('Add'), sg.Button('Edit')]] 
+
 
 
 
 window = sg.Window('Table', layout, grab_anywhere=False)
-event, values = window.read()
+
+while True:
+    event, values = window.Read()
+    for value in values:
+        print(value)
+    if event in (None, 'Exit'):
+        break
+    row = window['_selected_rows_'].Update(values['-TABLE-'])
+    value = window['_selected_value_'].Update(window.Element('-TABLE-'))
+
+    if event == 'Edit': 
+      print(row)
+
+    
+
 
 window.close()
+
+
