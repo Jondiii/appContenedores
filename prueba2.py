@@ -34,7 +34,7 @@ from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QDateTimeEdit,
         QDial, QDialog, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit,
         QProgressBar, QPushButton, QRadioButton, QScrollBar, QSizePolicy,
         QSlider, QSpinBox, QStyleFactory, QTableWidget, QTabWidget, QTextEdit,
-        QVBoxLayout, QWidget)
+        QVBoxLayout, QWidget, QTableWidgetItem)
 
 #https://github.com/pyqt/examples/tree/_/src/02%20PyQt%20Widgets
 
@@ -56,25 +56,17 @@ class WidgetGallery(QDialog):
 
     
         self.createBottomLeftTabWidget()
-
-
-
         topLayout = QHBoxLayout()
         topLayout.addWidget(styleLabel)
         topLayout.addWidget(styleComboBox)
         topLayout.addStretch(1)
         topLayout.addWidget(self.useStylePaletteCheckBox)
 
-        mainLayout = QGridLayout()
-        mainLayout.addLayout(topLayout, 0, 0, 1, 2)
-        mainLayout.addWidget(self.bottomLeftTabWidget, 2, 0)
- 
-        mainLayout.setRowStretch(1, 1)
-        mainLayout.setRowStretch(2, 1)
-        mainLayout.setColumnStretch(0, 1)
-        mainLayout.setColumnStretch(1, 1)
+        mainLayout = QVBoxLayout()
+        mainLayout.addLayout(topLayout)
+        mainLayout.addWidget(self.bottomLeftTabWidget)
+   
         self.setLayout(mainLayout)
-
         self.setWindowTitle("Styles")
         self.changeStyle('Windows')
 
@@ -88,6 +80,7 @@ class WidgetGallery(QDialog):
         else:
             QApplication.setPalette(self.originalPalette)
 
+    
 
     def createBottomLeftTabWidget(self):
         self.bottomLeftTabWidget = QTabWidget()
@@ -98,7 +91,6 @@ class WidgetGallery(QDialog):
         
         tab1hbox = QVBoxLayout()
         
-
         localidadEdit = QLineEdit(self)
         localidadLabel = QLabel("&Localidad:", self)
         localidadLabel.setBuddy(localidadEdit)
@@ -110,29 +102,79 @@ class WidgetGallery(QDialog):
         numDiasLabel.setBuddy(numDiasEdit)
         tab1hbox.addWidget(numDiasLabel)
         tab1hbox.addWidget(numDiasEdit)
+
+        capacidadContenedorEdit = QLineEdit(self)
+        capacidadContenedorLabel = QLabel("Capacidad máxima de los contenedores:", self)
+        capacidadContenedorLabel.setBuddy(capacidadContenedorEdit)
+        tab1hbox.addWidget(capacidadContenedorLabel)
+        tab1hbox.addWidget(capacidadContenedorEdit)
         
-        #tab1hbox.addWidget(tableWidget)
 
         tab1.setLayout(tab1hbox)
 
         tab2 = QWidget()
-        textEdit = QTextEdit()
-
-        textEdit.setPlainText("Twinkle, twinkle, little star,\n"
-                              "How I wonder what you are.\n" 
-                              "Up above the world so high,\n"
-                              "Like a diamond in the sky.\n"
-                              "Twinkle, twinkle, little star,\n" 
-                              "How I wonder what you are!\n")
+        tableWidget = QTableWidget(10, 10)
 
         tab2hbox = QHBoxLayout()
         tab2hbox.setContentsMargins(5, 5, 5, 5)
-        tab2hbox.addWidget(textEdit)
+      
+
+        tableWidget=QTableWidget()
+        tableWidget.setColumnCount(len(headers))
+        tableWidget.setRowCount(len(datos)+1)
+
+        j = 0
+        for h in headers: 
+            tableWidget.setHorizontalHeaderItem(j,QTableWidgetItem(h))
+            j += 1
+
+        i = 0
+        while i < len(datos): 
+            cont = 0
+            while cont < len(datos[0]): 
+                #no pilla el último
+                tableWidget.setItem(i,cont,QTableWidgetItem(str(datos[i][cont])))
+                #Set icon (para la última columna ?)
+                cont += 1
+
+            i += 1 
+
+        def getSelectedItemData():
+            for currentItem in tableWidget.selectedItems():
+                print("Row : "+str(currentItem.row())+" Column : "+str(currentItem.column())+" "+currentItem.text())
+                
+                datos[currentItem.row()][currentItem.column()] = int(currentItem.text())
+                #data.loc[currentItem.row(), currentItem.column()] = currentItem.text()
+                print(datos)
+                with open("test.csv", "w", newline='') as f:
+                    writer = csv.writer(f, delimiter=',')
+                    writer.writerow(headers) # write the header
+                    # write the actual content line by line
+                    for d in datos:
+                        writer.writerow(d)
+
+                #datos[currentItem.row()][currentItem.column()] = currentItem.text()
+
+        tableWidget.doubleClicked.connect(getSelectedItemData)
+        tab2hbox.addWidget(tableWidget)
         tab2.setLayout(tab2hbox)
 
-        self.bottomLeftTabWidget.addTab(tab1, "&Table")
-        self.bottomLeftTabWidget.addTab(tab2, "Text &Edit")
+        tab3 = QWidget()
+        tab3hbox = QHBoxLayout()
+        tab3hbox.setContentsMargins(5, 5, 5, 5)
+       # tab3hbox.addWidget()
+        tab3.setLayout(tab3hbox)
 
+        tab4 = QWidget()
+        tab4hbox = QHBoxLayout()
+        tab4hbox.setContentsMargins(5, 5, 5, 5)
+       # tab4hbox.addWidget()
+        tab4.setLayout(tab4hbox)
+
+        self.bottomLeftTabWidget.addTab(tab1, "&General")
+        self.bottomLeftTabWidget.addTab(tab2, "&Camiones")
+        self.bottomLeftTabWidget.addTab(tab3, "&Contenedores")
+        self.bottomLeftTabWidget.addTab(tab4, "&Plan")
    
 
 
@@ -141,6 +183,15 @@ if __name__ == '__main__':
     import sys
 
     app = QApplication(sys.argv)
+    headers = ['Camión','Capacidad','Velocidad','Funcionando']
+
+    data = pd.read_csv('test.csv', delimiter=',', header=0, names=headers)
+
+    datos = data.values.tolist() 
+    print(datos)
+    
     gallery = WidgetGallery()
+    
     gallery.show()
+    
     sys.exit(app.exec_()) 

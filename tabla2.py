@@ -38,7 +38,7 @@ datos = data.values.tolist()
 print(datos)
 
 def getSelectedItemData():
-    for currentItem  in tableWidget.selectedItems():
+    for currentItem in tableWidget.selectedItems():
         print("Row : "+str(currentItem.row())+" Column : "+str(currentItem.column())+" "+currentItem.text())
         
         datos[currentItem.row()][currentItem.column()] = int(currentItem.text())
