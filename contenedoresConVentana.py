@@ -23,7 +23,10 @@ import geopandas as gpd
 import matplotlib.pyplot as plt
 import contextily as ctx
 from shapely.geometry import Point
-
+import requests
+import folium
+import polyline
+import random
 
 #Interesting links with examples 
 #https://realpython.com/pysimplegui-python/
@@ -329,6 +332,22 @@ def getMin(seg):
     min += 1
   
   return int(min)
+
+"""Método que recibe los datos y devuelve las latitudes, longitudes y el depot"""
+
+def getCoordenadas(datos):
+    longitud = datos['longitude'].to_numpy()
+    latitud = datos['latitude'].to_numpy()
+    #Transformamos de UTM a Coordenadas Geográficas (Grados)
+    scrProj = pyproj.Proj(proj="utm", zone = 30, ellps="WGS84", units = "m")
+    dstProj = pyproj.Proj(proj = "longlat", ellps="WGS84", datum = "WGS84")
+
+    i = 0
+    for n in datos['latitude']:
+        longitud[i],latitud[i]=pyproj.transform(scrProj,dstProj, longitud[i],latitud[i])
+        i +=1
+
+    return latitud, longitud, [latitud[0], longitud[0]]
 
 """####Varios
 
@@ -713,6 +732,86 @@ def representarContenedores(listaRutas, data, localidad, dia, resultado, demanda
       
     plt.title(listaRutasEditada, y = 1.05,  ha='center')
     plt.show()
+
+
+"""####Mapeado"""
+
+
+def get_route(ruta, lat, longi):
+  strRuta = ""
+  for contenedor in ruta:
+      strRuta = strRuta + str(longi[contenedor]) + "," + str(lat[contenedor]) + ";"
+
+  strRuta = strRuta[:-1]
+
+  url = 'http://router.project-osrm.org/route/v1/driving/'+strRuta+'?annotations=distance,duration'
+
+  r = requests.get(url)
+  res = r.json()
+
+  routes = polyline.decode(res['routes'][0]['geometry'])
+  depot = [res['waypoints'][0]['location'][1], res['waypoints'][0]['location'][0]]
+  distance = res['routes'][0]['distance']
+  
+  out = {'route':routes,
+          'depot':depot,
+          'distance':distance,
+          'ruta':ruta,
+          'lat':lat,
+          'long':longi
+        }
+
+  return out
+
+def get_map(datos, rutas):
+  lat, longi, depot = getCoordenadas(datos)
+  mapas = []
+
+  m = folium.Map(location=depot,
+              zoom_start=13)
+
+  n = 0
+  for ruta in rutas:
+      n += 1
+      out = get_route(ruta, lat, longi)
+      feature_group = folium.FeatureGroup(name="Ruta "+str(n))
+
+      folium.PolyLine(
+          out['route'],
+          weight=8,
+          color=random.choice(('blue', 'red', 'green', 'yellow', 'black', 'purple', 'orange', 'brown', 'gray')),
+          opacity=0.8
+      ).add_to(feature_group)
+
+      folium.Marker(
+          location=out['depot'],
+          icon=folium.Icon(icon='play', color='green')
+      ).add_to(feature_group)
+
+      locations = {
+          'lat': out['lat'],
+          'long': out['long']
+      }
+
+      locationList = pd.DataFrame(locations)
+      locationList = locationList.values.tolist()
+          
+      i = 0
+      for point in out['ruta']:
+          i += 1
+          folium.Marker(
+              locationList[point], tooltip=str(i-1)
+          ).add_to(feature_group)
+
+      
+      feature_group.add_to(m)
+      
+  folium.LayerControl().add_to(m)
+      
+  mapas.append(m)
+
+  return mapas
+
 
 """### Función principal
 
