@@ -24,6 +24,7 @@ import matplotlib.pyplot as plt
 import contextily as ctx
 from shapely.geometry import Point
 
+
 #Interesting links with examples 
 #https://realpython.com/pysimplegui-python/
 #https://pysimplegui.readthedocs.io/en/latest/cookbook/ #Este tiene también sobre los colores.
@@ -1065,6 +1066,8 @@ def optimizacion(planInicial, costeInicial, ncontenedores, estadoContenedores, a
   return planInicial, costeInicial
 
 listaLocalidades = pd.read_csv("https://raw.githubusercontent.com/Jondiii/appContenedores/master/localidades.txt",delimiter=sep, header=header)
+
+
 
 
 '''

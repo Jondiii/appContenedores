@@ -29,9 +29,10 @@ import string
 import urllib, json
 import csv
 
+
 headers = ['Camión','Capacidad','Velocidad','Funcionando']
 
-data = pd.read_csv('https://raw.githubusercontent.com/Jondiii/appContenedores/master/test.csv', delimiter=',', header=0, names=headers)
+data = pd.read_csv('test.csv', delimiter=',', header=0, names=headers)
 
 datos = data.values.tolist() 
 print(datos)
@@ -67,23 +68,31 @@ tableWidget.setRowCount(len(datos)+1)
 
 #adding item in table
 
-i = 0
+
+j = 0
 for h in headers: 
-    tableWidget.setHorizontalHeaderItem(i,QTableWidgetItem(h))
-    
+    tableWidget.setHorizontalHeaderItem(j,QTableWidgetItem(h))
+    j += 1
+
+i = 0
+while i < len(datos): 
     cont = 0
-    while cont < len(datos) - 1: 
+    while cont < len(datos[0]): 
         #no pilla el último
         tableWidget.setItem(i,cont,QTableWidgetItem(str(datos[i][cont])))
+        #Set icon (para la última columna ?)
         cont += 1
-    i += 1
+
+    i += 1 
 
 
 
 tableWidget.doubleClicked.connect(getSelectedItemData)
 layout.addWidget(tableWidget)
 qwidget.setLayout(layout)
+app.setStyle("Breeze")
 qwidget.show()
+
 
 
 
