@@ -16,6 +16,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 import json
+import random
 
 
 listaRutas1 = [[0, 57, 50, 19, 18, 46, 25, 52, 29, 14, 62, 12, 5, 37, 9, 8, 30, 4, 33, 42, 39, 63, 58, 55, 40, 38, 43, 28, 0]]
@@ -69,7 +70,7 @@ def getCoordenadas(datos):
         longitud[i],latitud[i]=pyproj.transform(scrProj,dstProj, longitud[i],latitud[i])
         i +=1
 
-    return latitud, longitud
+    return latitud, longitud, [latitud[0], longitud[0]]
 
 def get_route(ruta, lat, longi):
     strRuta = ""
@@ -98,28 +99,30 @@ def get_route(ruta, lat, longi):
     return out
 
 def get_map(localidad, rutas):
-    datos = leerDatos(localidad)
-    lat, longi = getCoordenadas(datos)
+    datos = leerDatos(localidad)    
+    lat, longi, depot = getCoordenadas(datos)
     mapas = []
 
-    for ruta in rutas:
-        out = get_route(ruta, lat, longi)
+    m = folium.Map(location=depot,
+                zoom_start=13)
 
-        m = folium.Map(location=[(out['depot'][0] + out['depot'][0])/2, 
-                                (out['depot'][1] + out['depot'][1])/2], 
-                    zoom_start=13)
+    n = 0
+    for ruta in rutas:
+        n += 1
+        out = get_route(ruta, lat, longi)
+        feature_group = folium.FeatureGroup(name="Ruta "+str(n))
 
         folium.PolyLine(
             out['route'],
             weight=8,
-            color='blue',
-            opacity=0.6
-        ).add_to(m)
+            color=random.choice(('blue', 'red', 'green', 'yellow', 'black', 'purple', 'orange', 'brown', 'gray')),
+            opacity=0.8
+        ).add_to(feature_group)
 
         folium.Marker(
             location=out['depot'],
             icon=folium.Icon(icon='play', color='green')
-        ).add_to(m)
+        ).add_to(feature_group)
 
         locations = {
             'lat': out['lat'],
@@ -134,9 +137,14 @@ def get_map(localidad, rutas):
             i += 1
             folium.Marker(
                 locationList[point], tooltip=str(i-1)
-            ).add_to(m)
+            ).add_to(feature_group)
 
-        mapas.append(m)
+        
+        feature_group.add_to(m)
+        
+    folium.LayerControl().add_to(m)
+       
+    mapas.append(m)
 
     return mapas
 
