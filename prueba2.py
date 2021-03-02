@@ -37,6 +37,8 @@ from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QDateTimeEdit,
         QVBoxLayout, QWidget, QTableWidgetItem)
 
 #https://github.com/pyqt/examples/tree/_/src/02%20PyQt%20Widgets
+#https://stackoverflow.com/questions/52010524/widgets-placement-in-tabs
+
 
 
 class WidgetGallery(QDialog):
@@ -44,6 +46,7 @@ class WidgetGallery(QDialog):
         super(WidgetGallery, self).__init__(parent)
 
         self.originalPalette = QApplication.palette()
+        
 
         styleComboBox = QComboBox()
         styleComboBox.addItems(QStyleFactory.keys())
@@ -87,6 +90,9 @@ class WidgetGallery(QDialog):
         self.bottomLeftTabWidget.setSizePolicy(QSizePolicy.Preferred,
                 QSizePolicy.Ignored)
 
+        '''
+        TAB 1 - GENERAL 
+        '''
         tab1 = QWidget()
         
         tab1hbox = QVBoxLayout()
@@ -109,23 +115,26 @@ class WidgetGallery(QDialog):
         tab1hbox.addWidget(capacidadContenedorLabel)
         tab1hbox.addWidget(capacidadContenedorEdit)
         
-
         tab1.setLayout(tab1hbox)
 
+        '''
+        TAB 2 - TABLA CON INFORMACIÓN DE CAMIONES 
+        '''
+
         tab2 = QWidget()
-        tableWidget = QTableWidget(10, 10)
+        camionesTableWidget = QTableWidget(10, 10)
 
         tab2hbox = QHBoxLayout()
         tab2hbox.setContentsMargins(5, 5, 5, 5)
       
 
-        tableWidget=QTableWidget()
-        tableWidget.setColumnCount(len(headers))
-        tableWidget.setRowCount(len(datos)+1)
+        camionesTableWidget=QTableWidget()
+        camionesTableWidget.setColumnCount(len(headers))
+        camionesTableWidget.setRowCount(len(datos))
 
         j = 0
         for h in headers: 
-            tableWidget.setHorizontalHeaderItem(j,QTableWidgetItem(h))
+            camionesTableWidget.setHorizontalHeaderItem(j,QTableWidgetItem(h))
             j += 1
 
         i = 0
@@ -133,14 +142,14 @@ class WidgetGallery(QDialog):
             cont = 0
             while cont < len(datos[0]): 
                 #no pilla el último
-                tableWidget.setItem(i,cont,QTableWidgetItem(str(datos[i][cont])))
+                camionesTableWidget.setItem(i,cont,QTableWidgetItem(str(datos[i][cont])))
                 #Set icon (para la última columna ?)
                 cont += 1
 
             i += 1 
 
         def getSelectedItemData():
-            for currentItem in tableWidget.selectedItems():
+            for currentItem in camionesTableWidget.selectedItems():
                 print("Row : "+str(currentItem.row())+" Column : "+str(currentItem.column())+" "+currentItem.text())
                 
                 datos[currentItem.row()][currentItem.column()] = int(currentItem.text())
@@ -155,15 +164,66 @@ class WidgetGallery(QDialog):
 
                 #datos[currentItem.row()][currentItem.column()] = currentItem.text()
 
-        tableWidget.doubleClicked.connect(getSelectedItemData)
-        tab2hbox.addWidget(tableWidget)
+        camionesTableWidget.doubleClicked.connect(getSelectedItemData)
+        tab2hbox.addWidget(camionesTableWidget)
         tab2.setLayout(tab2hbox)
 
+   
+        '''
+        TAB 3 - TABLA CON INFORMACIÓN DE CONTENEDORES 
+        '''
+
         tab3 = QWidget()
+        contenedoresTableWidget = QTableWidget(10, 10)
+
         tab3hbox = QHBoxLayout()
         tab3hbox.setContentsMargins(5, 5, 5, 5)
-       # tab3hbox.addWidget()
+      
+        contenedoresTableWidget=QTableWidget()
+        contenedoresTableWidget.setColumnCount(len(headersContenedores))
+        contenedoresTableWidget.setRowCount(len(datosContenedores)+1)
+
+        j = 0
+        for h in headersContenedores: 
+            contenedoresTableWidget.setHorizontalHeaderItem(j,QTableWidgetItem(h))
+            j += 1
+
+        i = 0
+        while i < len(datosContenedores): 
+            cont = 0
+            while cont < len(datosContenedores[0]): 
+                #no pilla el último
+                contenedoresTableWidget.setItem(i,cont,QTableWidgetItem(str(datosContenedores[i][cont])))
+                #Set icon (para la última columna ?)
+                cont += 1
+
+            i += 1 
+
+        def getSelectedItemData():
+            for currentItem in contenedoresTableWidget.selectedItems():
+                print("Row : "+str(currentItem.row())+" Column : "+str(currentItem.column())+" "+currentItem.text())
+                
+                datos[currentItem.row()][currentItem.column()] = int(currentItem.text())
+                #data.loc[currentItem.row(), currentItem.column()] = currentItem.text()
+                print(datos)
+                with open("Contenedores.csv", "w", newline='') as f:
+                    writer = csv.writer(f, delimiter=',')
+                    writer.writerow(headers) # write the header
+                    # write the actual content line by line
+                    for d in datos:
+                        writer.writerow(d)
+
+                #datos[currentItem.row()][currentItem.column()] = currentItem.text()
+
+        contenedoresTableWidget.doubleClicked.connect(getSelectedItemData)
+        tab3hbox.addWidget(contenedoresTableWidget)
         tab3.setLayout(tab3hbox)
+
+
+        '''
+        TAB 4 - MUESTRA RUTAS 
+        '''
+
 
         tab4 = QWidget()
         tab4hbox = QHBoxLayout()
@@ -183,15 +243,30 @@ if __name__ == '__main__':
     import sys
 
     app = QApplication(sys.argv)
+           
+
+
+    ''' 
+    LECTURA DE DATOS PARA TABLAS 
+    '''
     headers = ['Camión','Capacidad','Velocidad','Funcionando']
-
     data = pd.read_csv('test.csv', delimiter=',', header=0, names=headers)
-
     datos = data.values.tolist() 
-    print(datos)
-    
+    #print(datos)
+
+    headersContenedores = ["ID Contenedor", "Estado Inicial", "Aumento Diario"]
+    dataContenedores = pd.read_csv('Contenedores.csv', delimiter=',', header=0, names=headersContenedores)
+    datosContenedores = dataContenedores.values.tolist() 
+    #print(datosContenedores)
+
+
     gallery = WidgetGallery()
     
     gallery.show()
+
+    '''
+    SACAR VARIABLES 
+    '''
+
     
     sys.exit(app.exec_()) 
