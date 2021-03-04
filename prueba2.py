@@ -51,7 +51,6 @@ class WidgetGallery(QDialog):
 
         self.originalPalette = QApplication.palette()
         
-
         styleComboBox = QComboBox()
         styleComboBox.addItems(QStyleFactory.keys())
 
@@ -74,14 +73,17 @@ class WidgetGallery(QDialog):
         mainLayout.addLayout(topLayout)
         mainLayout.addWidget(self.bottomLeftTabWidget)
         
-
-
-
         lowerLayout = QVBoxLayout()
         lowerLayout.addLayout(mainLayout)
 
+
+        planificarRutas = QPushButton(self)
+        planificarRutas.setText("&Planificar")
+        lowerLayout.addWidget(planificarRutas)
+
+        #planificarRutas.clicked.connect(lambda checked,  self.guardarDatos(obj))
+
         #self.connect(self.planificarB, SIGNAL("clicked()"),self.button_click)
-    
     
         self.setLayout(lowerLayout)
         
@@ -101,7 +103,6 @@ class WidgetGallery(QDialog):
             QApplication.setPalette(self.originalPalette)
 
     
-
     def createBottomLeftTabWidget(self):
         self.bottomLeftTabWidget = QTabWidget()
         self.bottomLeftTabWidget.setSizePolicy(QSizePolicy.Preferred,
@@ -120,8 +121,6 @@ class WidgetGallery(QDialog):
         tab1hbox.addWidget(localidadLabel)
         tab1hbox.addWidget(localidadEdit)
         
-       
-
         numDiasEdit = QLineEdit(self)
         numDiasLabel = QLabel("&Número de días:", self)
         numDiasLabel.setBuddy(numDiasEdit)
@@ -139,7 +138,6 @@ class WidgetGallery(QDialog):
         tab1hbox.addWidget(guardadGeneral)
         guardadGeneral.clicked.connect(lambda checked, obj=[localidadEdit,numDiasEdit,capacidadContenedorEdit] : self.guardarDatos(obj))
 
-        
         tab1.setLayout(tab1hbox)
 
 
@@ -225,7 +223,7 @@ class WidgetGallery(QDialog):
 
             i += 1 
 
-        def getSelectedItemData():
+        def getSelectedItemData2():
             for currentItem in contenedoresTableWidget.selectedItems():
                 print("Row : "+str(currentItem.row())+" Column : "+str(currentItem.column())+" "+currentItem.text())
                 
@@ -241,15 +239,13 @@ class WidgetGallery(QDialog):
 
                 #datos[currentItem.row()][currentItem.column()] = currentItem.text()
 
-        contenedoresTableWidget.doubleClicked.connect(getSelectedItemData)
+        contenedoresTableWidget.doubleClicked.connect(getSelectedItemData2)
         tab3hbox.addWidget(contenedoresTableWidget)
         tab3.setLayout(tab3hbox)
-
 
         '''
         TAB 4 - MUESTRA RUTAS 
         '''
-
 
         tab4 = QWidget()
         tab4hbox = QHBoxLayout()
@@ -262,12 +258,11 @@ class WidgetGallery(QDialog):
         self.bottomLeftTabWidget.addTab(tab3, "&Contenedores")
         self.bottomLeftTabWidget.addTab(tab4, "&Plan")
 
-       
 
-    
+
     def guardarDatos(self,obj):
         # shost is a QString object
-
+        
         localidad = obj[0].text()
         numDias = obj[1].text()
         capacidadContenedor = obj[2].text()
@@ -275,6 +270,9 @@ class WidgetGallery(QDialog):
         print(localidad)
         print(numDias)
         print(capacidadContenedor)
+
+  
+
         
         
         
@@ -317,15 +315,20 @@ if __name__ == '__main__':
     numCamiones = 0 
     capacidadCamiones = []
     valocidadCamiones = []
-    for c in data: 
-        if c['Funcionando'] == 1: 
+    for c in datos: 
+        if c[3] == 1: 
             numCamiones += 1
-            capacidadCamiones.append(c['Capacidad'])
-            valocidadCamiones.append(c['Velocidad'])
+            capacidadCamiones.append(c[1])
+            valocidadCamiones.append(c[2])
 
     ##DATOS CONTENEDORES
-    estadoInicial = datosContenedores['Estado Inicial']
-    aumentoDiario = datosContenedores['Aumento Duario']
+    estadoInicial = datosContenedores[1]
+    aumentoDiario = datosContenedores[2]
+
+    print(numCamiones)
+    print(capacidadCamiones)
+    print(valocidadCamiones)
+    print(estadoInicial)
 
     gallery = WidgetGallery()
     
