@@ -841,9 +841,13 @@ def get_route(ruta, lat, longi):
 
   return out
 
+
 def get_map(lat, longi, depot, rutas):
   mapas = []
-
+  
+  colores = ('blue', 'red', 'green', 'yellow', 'black', 'purple', 'orange', 'brown', 'gray')
+  colores = list(colores)
+  
   m = folium.Map(location=depot,
               zoom_start=13)
 
@@ -854,10 +858,14 @@ def get_map(lat, longi, depot, rutas):
       out = get_route(ruta, lat, longi)
       feature_group = folium.FeatureGroup(name="Ruta "+str(n))
 
+      color_elegido = random.choice(colores)
+
+      colores.remove(color_elegido)
+
       folium.PolyLine(
           out['route'],
           weight=8,
-          color=random.choice(('blue', 'red', 'green', 'yellow', 'black', 'purple', 'orange', 'brown', 'gray')),
+          color=color_elegido,
           opacity=0.8
       ).add_to(feature_group)
 
