@@ -59,8 +59,8 @@ def leerDatos(localidad):
     return datos
 
 def getCoordenadas(datos):
-    longitud = datos['longitude'].to_numpy()
-    latitud = datos['latitude'].to_numpy()
+    longitud = (datos['longitude'].to_numpy(dtype=float)).copy()
+    latitud = (datos['latitude'].to_numpy(dtype=float)).copy
     #Transformamos de UTM a Coordenadas Geográficas (Grados)
     scrProj = pyproj.Proj(proj="utm", zone = 30, ellps="WGS84", units = "m")
     dstProj = pyproj.Proj(proj = "longlat", ellps="WGS84", datum = "WGS84")

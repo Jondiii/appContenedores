@@ -17,6 +17,10 @@ import urllib.error
 import urllib.parse
 import urllib.request
 import json
+import folium
+import polyline
+import random
+import requests
 
 # Elimina los warning
 import warnings
@@ -407,6 +411,20 @@ def getMin(seg):
   
   return int(min)
 
+"""Método que recibe los datos y devuelve las latitudes, longitudes y el depot"""
+def getCoordenadas(data):
+  longitud = (data['datos']['longitude'].to_numpy(dtype=float)).copy()
+  latitud = (data['datos']['latitude'].to_numpy(dtype=float)).copy()
+  #Transformamos de UTM a Coordenadas Geográficas (Grados)
+  scrProj = pyproj.Proj(proj="utm", zone = 30, ellps="WGS84", units = "m")
+  dstProj = pyproj.Proj(proj = "longlat", ellps="WGS84", datum = "WGS84")
+
+  i = 0
+  while i < len(data['datos']['latitude']):
+      longitud[i],latitud[i]=pyproj.transform(scrProj,dstProj, longitud[i],latitud[i])
+      i +=1
+
+  return latitud, longitud, [latitud[0], longitud[0]]
 
 """####Varios
 
@@ -797,6 +815,80 @@ def representarContenedores(listaRutas, data, localidad, dia, resultado, demanda
     plt.title(listaRutasEditada, y = 1.05,  ha='center')
     plt.show()
 
+"""####Mapeado"""
+def get_route(ruta, lat, longi):
+  strRuta = ""
+  for contenedor in ruta:
+    strRuta = strRuta + str(longi[contenedor]) + "," + str(lat[contenedor]) + ";"
+
+  strRuta = strRuta[:-1]
+  url = 'http://router.project-osrm.org/route/v1/driving/'+strRuta+'?annotations=distance,duration'
+
+  r = requests.get(url)
+  res = r.json()
+
+  routes = polyline.decode(res['routes'][0]['geometry'])
+  depot = [res['waypoints'][0]['location'][1], res['waypoints'][0]['location'][0]]
+  distance = res['routes'][0]['distance']
+  
+  out = {'route':routes,
+          'depot':depot,
+          'distance':distance,
+          'ruta':ruta,
+          'lat':lat,
+          'long':longi
+        }
+
+  return out
+
+def get_map(lat, longi, depot, rutas):
+  mapas = []
+
+  m = folium.Map(location=depot,
+              zoom_start=13)
+
+  n = 0
+  for ruta in rutas:
+    if len(ruta)>2:
+      n += 1
+      out = get_route(ruta, lat, longi)
+      feature_group = folium.FeatureGroup(name="Ruta "+str(n))
+
+      folium.PolyLine(
+          out['route'],
+          weight=8,
+          color=random.choice(('blue', 'red', 'green', 'yellow', 'black', 'purple', 'orange', 'brown', 'gray')),
+          opacity=0.8
+      ).add_to(feature_group)
+
+      folium.Marker(
+          location=out['depot'],
+          icon=folium.Icon(icon='play', color='green')
+      ).add_to(feature_group)
+
+      locations = {
+          'lat': out['lat'],
+          'long': out['long']
+      }
+
+      locationList = pd.DataFrame(locations)
+      locationList = locationList.values.tolist()
+          
+      i = 0
+      for point in out['ruta']:
+          i += 1
+          folium.Marker(
+              locationList[point], tooltip=str(i-1)
+          ).add_to(feature_group)
+
+      
+      feature_group.add_to(m)
+      
+  folium.LayerControl().add_to(m)
+      
+  mapas.append(m)
+
+  return mapas
 
 """### Función principal
 
@@ -1217,31 +1309,39 @@ print("######################\n")
 print("SOLUCIÓN")
 
 coste, resultado, demandas = funcion(data, plan, estadoContenedores, aumentoDiario)
-print("\n\nCÓDIGO DE COLORES")
-print("- - - - - - - - - -")
-print("Azul - correctas")
-print("Amarillo - límite")
-print("Rojo - desbordadas")
+lat = data['datos']['latitude']
+longi = data['datos']['longitude']
+depot = [lat[0], longi[0]]
+#lat, longi, depot = getCoordenadas(data) #En el collab funciona bien con esto, por algún motivo en local no.
 
-#print("resultado: ", resultado)
+
+
+print("\n\nCÓDIGO DE COLORES\n- - - - - - - - - -\nAzul - correctas\nAmarillo - límite\nRojo - desbordadas\n")
 
 d = 0
-try:
-  while d < numDias:  
-    listaR = []
-    ncam = 0
+#try:
+while d < numDias:  
+  listaR = []
+  ncam = 0
 
-    while ncam < nCamiones: 
-      # sale index out of range
-    
-      listaR.append(resultado[d]['listaRutas'][ncam])
-      #representarContenedores(listaR, data, localidad)
-      ncam +=1
+  while ncam < nCamiones: 
+    # sale index out of range
+  
+    listaR.append(resultado[d]['listaRutas'][ncam])
+    #representarContenedores(listaR, data, localidad)
+    ncam +=1
 
-    representarContenedores(listaR,data,localidad, d, resultado, demandas)
-    d += 1
+  #representarContenedores(listaR,data,localidad, d, resultado, demandas)
+  mapas = get_map(lat, longi, depot, listaR)
 
-except:
-  print("Las rutas del día {} hace que se desborden contenedores. Se ha dejado de planificar.".format(d+1))
+  for mapa in mapas:
+    mapa.save(localidad+" - dia "+str(d+1)+".html")
+
+  d += 1
+
+
+#except:
+  #print("Las rutas del día {} hace que se desborden contenedores. Se ha dejado de planificar.".format(d+1))
+
 
 print("\nCostes: ", coste)
