@@ -45,9 +45,31 @@ localidad = ""
 numDias = 0
 capacidadContenedor = 0  
 
+headers = ['Camión','Capacidad','Velocidad','Funcionando']
+data = pd.read_csv('test.csv', delimiter=',', header=0, names=headers)
+datos = data.values.tolist() 
+
+#print(datos)
+
+headersContenedores = ["ID Contenedor", "Estado Inicial", "Aumento Diario"]
+dataContenedores = pd.read_csv('Contenedores.csv', delimiter=',', header=0, names=headersContenedores)
+datosContenedores = dataContenedores.values.tolist() 
+#print(datosContenedores)
+
+
+#estos valores se tiene que asignar en el tab general 
+localidad = ""
+numDias = 3
+capacidadContenedor = 0
+
+
 class WidgetGallery(QDialog):
     def __init__(self, parent=None):
         super(WidgetGallery, self).__init__(parent)
+        
+        self._dataCamiones = datos
+        self._dataContenedores = datosContenedores
+
 
         self.originalPalette = QApplication.palette()
         
@@ -175,21 +197,28 @@ class WidgetGallery(QDialog):
         def getSelectedItemData():
             for currentItem in camionesTableWidget.selectedItems():
                 print("Row : "+str(currentItem.row())+" Column : "+str(currentItem.column())+" "+currentItem.text())
-                
+                #falta algún tipo de refresh que nos permita guardar los cambios
                 datos[currentItem.row()][currentItem.column()] = int(currentItem.text())
-                #data.loc[currentItem.row(), currentItem.column()] = currentItem.text()
-                print(datos)
+                
+                
                 with open("test.csv", "w", newline='') as f:
                     writer = csv.writer(f, delimiter=',')
                     writer.writerow(headers) # write the header
                     # write the actual content line by line
                     for d in datos:
                         writer.writerow(d)
+                    
 
-                #datos[currentItem.row()][currentItem.column()] = currentItem.text()
 
-        camionesTableWidget.doubleClicked.connect(getSelectedItemData)
+        camionesTableWidget.clicked.connect(getSelectedItemData)
         tab2hbox.addWidget(camionesTableWidget)
+        guardarCamiones = QPushButton(self)
+        guardarCamiones.setText("Guardar")
+        tab2hbox.addWidget(guardarCamiones)
+        guardarCamiones.clicked.connect(lambda checked, obj=camionesTableWidget : self.guardarCamiones(obj))
+
+
+
         tab2.setLayout(tab2hbox)
 
    
@@ -271,7 +300,10 @@ class WidgetGallery(QDialog):
         print(numDias)
         print(capacidadContenedor)
 
-  
+      
+       
+
+
 
         
         
@@ -290,21 +322,6 @@ if __name__ == '__main__':
     ''' 
     LECTURA DE DATOS PARA TABLAS 
     '''
-    headers = ['Camión','Capacidad','Velocidad','Funcionando']
-    data = pd.read_csv('test.csv', delimiter=',', header=0, names=headers)
-    datos = data.values.tolist() 
-    #print(datos)
-
-    headersContenedores = ["ID Contenedor", "Estado Inicial", "Aumento Diario"]
-    dataContenedores = pd.read_csv('Contenedores.csv', delimiter=',', header=0, names=headersContenedores)
-    datosContenedores = dataContenedores.values.tolist() 
-    #print(datosContenedores)
-
-
-    #estos valores se tiene que asignar en el tab general 
-    localidad = ""
-    numDias = 3
-    capacidadContenedor = 0
 
 
 

@@ -37,21 +37,26 @@ data = pd.read_csv('test.csv', delimiter=',', header=0, names=headers)
 datos = data.values.tolist() 
 print(datos)
 
-def getSelectedItemData():
-    for currentItem in tableWidget.selectedItems():
-        print("Row : "+str(currentItem.row())+" Column : "+str(currentItem.column())+" "+currentItem.text())
-        
-        datos[currentItem.row()][currentItem.column()] = int(currentItem.text())
-        #data.loc[currentItem.row(), currentItem.column()] = currentItem.text()
-        print(datos)
-        with open("test.csv", "w", newline='') as f:
-            writer = csv.writer(f, delimiter=',')
-            writer.writerow(headers) # write the header
-            # write the actual content line by line
-            for d in datos:
-                writer.writerow(d)
+def updateTable(self):
+        """:author : Tich
+        update data in the table
+        :param w: update data in `w.table`
+        """
+        try:
+            num = cursor.execute("SELECT * FROM words ORDER BY origin;")
+            if num:
+                tableWidget.table.setRowCount(num)
+                for r in cursor:
+                    # print(r)
+                    i = cursor.rownumber - 1
+                    for x in range(3):
+                        item = QTableWidgetItem(str(r[x]))
+                        item.setTextAlignment(Qt.AlignCenter);
+                        w.table.setItem(i, x, item)
+        except Exception as e:
+            # print(e)
+            self.messageBox("update table error!\nerror msg: %s"%e.args[1]) 
 
-        #datos[currentItem.row()][currentItem.column()] = currentItem.text()
 
 app=QApplication(sys.argv)
 
@@ -87,7 +92,7 @@ while i < len(datos):
 
 
 
-tableWidget.doubleClicked.connect(getSelectedItemData)
+tableWidget.doubleClicked.connect(updateTable)
 layout.addWidget(tableWidget)
 qwidget.setLayout(layout)
 app.setStyle("Breeze")
