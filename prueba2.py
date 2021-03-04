@@ -38,8 +38,12 @@ from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QDateTimeEdit,
 
 #https://github.com/pyqt/examples/tree/_/src/02%20PyQt%20Widgets
 #https://stackoverflow.com/questions/52010524/widgets-placement-in-tabs
+#https://realpython.com/python-pyqt-gui-calculator/
 
 
+localidad = ""
+numDias = 0
+capacidadContenedor = 0  
 
 class WidgetGallery(QDialog):
     def __init__(self, parent=None):
@@ -59,6 +63,7 @@ class WidgetGallery(QDialog):
 
     
         self.createBottomLeftTabWidget()
+        
         topLayout = QHBoxLayout()
         topLayout.addWidget(styleLabel)
         topLayout.addWidget(styleComboBox)
@@ -68,10 +73,22 @@ class WidgetGallery(QDialog):
         mainLayout = QVBoxLayout()
         mainLayout.addLayout(topLayout)
         mainLayout.addWidget(self.bottomLeftTabWidget)
-   
-        self.setLayout(mainLayout)
+        
+
+
+
+        lowerLayout = QVBoxLayout()
+        lowerLayout.addLayout(mainLayout)
+
+        #self.connect(self.planificarB, SIGNAL("clicked()"),self.button_click)
+    
+    
+        self.setLayout(lowerLayout)
+        
         self.setWindowTitle("Styles")
         self.changeStyle('Windows')
+
+       
 
     def changeStyle(self, styleName):
         QApplication.setStyle(QStyleFactory.create(styleName))
@@ -102,6 +119,8 @@ class WidgetGallery(QDialog):
         localidadLabel.setBuddy(localidadEdit)
         tab1hbox.addWidget(localidadLabel)
         tab1hbox.addWidget(localidadEdit)
+        
+       
 
         numDiasEdit = QLineEdit(self)
         numDiasLabel = QLabel("&Número de días:", self)
@@ -114,8 +133,15 @@ class WidgetGallery(QDialog):
         capacidadContenedorLabel.setBuddy(capacidadContenedorEdit)
         tab1hbox.addWidget(capacidadContenedorLabel)
         tab1hbox.addWidget(capacidadContenedorEdit)
+
+        guardadGeneral = QPushButton(self)
+        guardadGeneral.setText("Guardar")
+        tab1hbox.addWidget(guardadGeneral)
+        guardadGeneral.clicked.connect(lambda checked, obj=[localidadEdit,numDiasEdit,capacidadContenedorEdit] : self.guardarDatos(obj))
+
         
         tab1.setLayout(tab1hbox)
+
 
         '''
         TAB 2 - TABLA CON INFORMACIÓN DE CAMIONES 
@@ -235,15 +261,32 @@ class WidgetGallery(QDialog):
         self.bottomLeftTabWidget.addTab(tab2, "&Camiones")
         self.bottomLeftTabWidget.addTab(tab3, "&Contenedores")
         self.bottomLeftTabWidget.addTab(tab4, "&Plan")
-   
+
+       
+
+    
+    def guardarDatos(self,obj):
+        # shost is a QString object
+
+        localidad = obj[0].text()
+        numDias = obj[1].text()
+        capacidadContenedor = obj[2].text()
+
+        print(localidad)
+        print(numDias)
+        print(capacidadContenedor)
+        
+        
+        
 
 
 if __name__ == '__main__':
 
     import sys
+   
 
     app = QApplication(sys.argv)
-           
+     
 
 
     ''' 
@@ -260,6 +303,30 @@ if __name__ == '__main__':
     #print(datosContenedores)
 
 
+    #estos valores se tiene que asignar en el tab general 
+    localidad = ""
+    numDias = 3
+    capacidadContenedor = 0
+
+
+
+    # somehow update
+
+    #once it is updated 
+    ## DATOS CAMIONES 
+    numCamiones = 0 
+    capacidadCamiones = []
+    valocidadCamiones = []
+    for c in data: 
+        if c['Funcionando'] == 1: 
+            numCamiones += 1
+            capacidadCamiones.append(c['Capacidad'])
+            valocidadCamiones.append(c['Velocidad'])
+
+    ##DATOS CONTENEDORES
+    estadoInicial = datosContenedores['Estado Inicial']
+    aumentoDiario = datosContenedores['Aumento Duario']
+
     gallery = WidgetGallery()
     
     gallery.show()
@@ -269,4 +336,7 @@ if __name__ == '__main__':
     '''
 
     
+   
+    
     sys.exit(app.exec_()) 
+
