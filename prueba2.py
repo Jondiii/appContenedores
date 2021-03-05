@@ -29,7 +29,9 @@ import string
 import urllib, json
 import csv
 import sys
-from PyQt5.QtCore import QDateTime, Qt, QTimer
+import os
+from PyQt5.QtCore import *
+from PyQt5.QtWebEngineWidgets import * #Para esto hacer pip install PyQtWebEngine
 from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QDateTimeEdit,
         QDial, QDialog, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit,
         QProgressBar, QPushButton, QRadioButton, QScrollBar, QSizePolicy,
@@ -275,11 +277,16 @@ class WidgetGallery(QDialog):
         '''
         TAB 4 - MUESTRA RUTAS 
         '''
-
+        #https://stackoverflow.com/questions/60246282/read-a-html-file-and-display-it-in-tkinter-window
+        #https://stackoverflow.com/questions/52656526/how-to-insert-a-web-browser-in-python-qt-designer
         tab4 = QWidget()
+        browser = QWebEngineView()
+        browser.load(QUrl('file://' + os.path.realpath("ABADINO - dia 1.html")))
         tab4hbox = QHBoxLayout()
         tab4hbox.setContentsMargins(5, 5, 5, 5)
-       # tab4hbox.addWidget()
+        tab4hbox.addWidget(browser)
+        #browser.show() #Si descomentamos esto se abre y se cierra una ventana antes de que salga la ventana de la aplicación.
+
         tab4.setLayout(tab4hbox)
 
         self.bottomLeftTabWidget.addTab(tab1, "&General")
