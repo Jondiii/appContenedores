@@ -1,5 +1,5 @@
 import sys
-from PyQt5.QtWidgets import QWidget,QApplication,QTableWidget,QTableWidgetItem,QVBoxLayout
+from PyQt5.QtWidgets import QWidget,QApplication,QTableWidget,QTableWidgetItem,QVBoxLayout,QPushButton
 import PySimpleGUI as sg
 from ortools.constraint_solver import routing_enums_pb2
 from ortools.constraint_solver import pywrapcp
@@ -37,25 +37,6 @@ data = pd.read_csv('test.csv', delimiter=',', header=0, names=headers)
 datos = data.values.tolist() 
 print(datos)
 
-def updateTable(self):
-        """:author : Tich
-        update data in the table
-        :param w: update data in `w.table`
-        """
-        try:
-            num = cursor.execute("SELECT * FROM words ORDER BY origin;")
-            if num:
-                tableWidget.table.setRowCount(num)
-                for r in cursor:
-                    # print(r)
-                    i = cursor.rownumber - 1
-                    for x in range(3):
-                        item = QTableWidgetItem(str(r[x]))
-                        item.setTextAlignment(Qt.AlignCenter);
-                        w.table.setItem(i, x, item)
-        except Exception as e:
-            # print(e)
-            self.messageBox("update table error!\nerror msg: %s"%e.args[1]) 
 
 
 app=QApplication(sys.argv)
@@ -92,8 +73,42 @@ while i < len(datos):
 
 
 
-tableWidget.doubleClicked.connect(updateTable)
+def guardar(self):
+        
+    row = 0
+    col = 0
+    for i in range(tableWidget.columnCount()):
+        for x in range(tableWidget.rowCount()):
+            try:
+                text = str(tableWidget.item(row, col).text())
+                datos[x][i] = text
+                row += 1
+            except AttributeError:
+                row += 1
+        row = 0
+        col += 1
+
+    with open("test.csv", "w", newline='') as f:
+        writer = csv.writer(f, delimiter=',')
+        writer.writerow(headers) # write the header
+        # write the actual content line by line
+
+        for d in datos:
+            writer.writerow(d)
+
+
+
+#tableWidget.doubleClicked.connect(updateTable)
+
+
 layout.addWidget(tableWidget)
+
+guardarB = QPushButton()
+guardarB.setText("Guardar")
+layout.addWidget(guardarB)
+
+guardarB.clicked.connect(guardar)
+
 qwidget.setLayout(layout)
 app.setStyle("Breeze")
 qwidget.show()
