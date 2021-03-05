@@ -196,28 +196,36 @@ class WidgetGallery(QDialog):
 
             i += 1 
 
-        def getSelectedItemData():
-            for currentItem in camionesTableWidget.selectedItems():
-                print("Row : "+str(currentItem.row())+" Column : "+str(currentItem.column())+" "+currentItem.text())
-                #falta algún tipo de refresh que nos permita guardar los cambios
-                datos[currentItem.row()][currentItem.column()] = int(currentItem.text())
-                
-                
-                with open("test.csv", "w", newline='') as f:
-                    writer = csv.writer(f, delimiter=',')
-                    writer.writerow(headers) # write the header
-                    # write the actual content line by line
-                    for d in datos:
-                        writer.writerow(d)
-                    
+        def guardarCamiones(self):
+        
+            row = 0
+            col = 0
+            for i in range(camionesTableWidget.columnCount()):
+                for x in range(camionesTableWidget.rowCount()):
+                    try:
+                        text = str(camionesTableWidget.item(row, col).text())
+                        datos[x][i] = text
+                        row += 1
+                    except AttributeError:
+                        row += 1
+                row = 0
+                col += 1
+
+            with open("test.csv", "w", newline='') as f:
+                writer = csv.writer(f, delimiter=',')
+                writer.writerow(headers) # write the header
+                # write the actual content line by line
+
+                for d in datos:
+                    writer.writerow(d)
 
 
-        camionesTableWidget.clicked.connect(getSelectedItemData)
+
         tab2hbox.addWidget(camionesTableWidget)
-        guardarCamiones = QPushButton(self)
-        guardarCamiones.setText("Guardar")
-        tab2hbox.addWidget(guardarCamiones)
-        guardarCamiones.clicked.connect(lambda checked, obj=camionesTableWidget : self.guardarCamiones(obj))
+        guardarCamionesB= QPushButton(self)
+        guardarCamionesB.setText("Guardar")
+        tab2hbox.addWidget(guardarCamionesB)
+        guardarCamionesB.clicked.connect(guardarCamiones)
 
 
 
@@ -254,24 +262,35 @@ class WidgetGallery(QDialog):
 
             i += 1 
 
-        def getSelectedItemData2():
-            for currentItem in contenedoresTableWidget.selectedItems():
-                print("Row : "+str(currentItem.row())+" Column : "+str(currentItem.column())+" "+currentItem.text())
-                
-                datos[currentItem.row()][currentItem.column()] = int(currentItem.text())
-                #data.loc[currentItem.row(), currentItem.column()] = currentItem.text()
-                print(datos)
-                with open("Contenedores.csv", "w", newline='') as f:
-                    writer = csv.writer(f, delimiter=',')
-                    writer.writerow(headers) # write the header
-                    # write the actual content line by line
-                    for d in datos:
-                        writer.writerow(d)
+        def guardarContenedores(self):
+        
+            row = 0
+            col = 0
+            for i in range(contenedoresTableWidget.columnCount()):
+                for x in range(contenedoresTableWidget.rowCount()):
+                    try:
+                        text = str(contenedoresTableWidget.item(row, col).text())
+                        datos[x][i] = text
+                        row += 1
+                    except AttributeError:
+                        row += 1
+                row = 0
+                col += 1
 
-                #datos[currentItem.row()][currentItem.column()] = currentItem.text()
+            with open("Contenedores.csv", "w", newline='') as f:
+                writer = csv.writer(f, delimiter=',')
+                writer.writerow(headers) # write the header
+                # write the actual content line by line
 
-        contenedoresTableWidget.doubleClicked.connect(getSelectedItemData2)
+                for d in datosContenedores:
+                    writer.writerow(d)
+
+
         tab3hbox.addWidget(contenedoresTableWidget)
+        guardarContenedoresB = QPushButton(self)
+        guardarContenedoresB.setText("Guardar")
+        tab3hbox.addWidget(guardarContenedoresB)
+        guardarContenedoresB.clicked.connect(guardarContenedores)
         tab3.setLayout(tab3hbox)
 
         '''
