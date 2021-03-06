@@ -1450,10 +1450,18 @@ class WidgetGallery(QDialog):
         #https://stackoverflow.com/questions/52656526/how-to-insert-a-web-browser-in-python-qt-designer
         tab4 = QWidget()
         browser = QWebEngineView()
-        browser.load(QUrl('file://' + os.path.realpath("ABADINO - dia 1.html")))
+        #browser.load(QUrl('file://' + os.path.realpath("ABADINO - dia 1.html")))
+        #browser.load(QUrl.fromLocalFile('file://' + os.path.realpath("ABADINO - dia 1.html")))
+        #browser.load(QUrl('https://www.learnpyqt.com'))#Esto funciona en Windows, pero las dos anteriores no...
+
+        file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "ABADINO - dia 1.html"))
+        local_url = QUrl.fromLocalFile(file_path)
+        browser.load(local_url)
+
         tab4hbox = QHBoxLayout()
         tab4hbox.setContentsMargins(5, 5, 5, 5)
         tab4hbox.addWidget(browser)
+        
         #browser.show() #Si descomentamos esto se abre y se cierra una ventana antes de que salga la ventana de la aplicación.
 
         tab4.setLayout(tab4hbox)
