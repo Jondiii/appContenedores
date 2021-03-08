@@ -1206,13 +1206,13 @@ def optimizacion(planInicial, costeInicial, ncontenedores, estadoContenedores, a
 
   return planInicial, costeInicial
 
-listaLocalidades = pd.read_csv("https://raw.githubusercontent.com/Jondiii/appContenedores/master/localidades.txt",delimiter=sep, header=header)
 
 '''
 ------------------------------------
           V E N T A N A   
 ------------------------------------
 '''
+listaLocalidades = pd.read_csv("https://raw.githubusercontent.com/Jondiii/appContenedores/master/localidades.txt",delimiter=sep, header=header)
 
 
 class WidgetGallery(QDialog):
@@ -1289,13 +1289,16 @@ class WidgetGallery(QDialog):
         tab1 = QWidget()
         
         tab1hbox = QFormLayout()
-        #localidadCombo = QComboBox()
-        #localidadCombo.addItems(QStyleFactory.keys())
-        localidadEdit = QLineEdit(self)
+        localidadCombo = QComboBox()
+        localidadCombo.addItems(listaLocalidades)
+
+        #localidadEdit = QLineEdit(self)
         localidadLabel = QLabel("&Localidad:", self)
-        localidadLabel.setBuddy(localidadEdit)
+        localidadLabel.setBuddy(localidadCombo)
         tab1hbox.addWidget(localidadLabel)
-        tab1hbox.addWidget(localidadEdit)
+        #tab1hbox.addWidget(localidadEdit)
+        localidadCombo.setStyleSheet("QComboBox { combobox-popup: 0; }");
+        tab1hbox.addWidget(localidadCombo)
         
         numDiasEdit = QLineEdit(self)
         numDiasLabel = QLabel("&Número de días:", self)
@@ -1312,7 +1315,7 @@ class WidgetGallery(QDialog):
         guardadGeneral = QPushButton(self)
         guardadGeneral.setText("Guardar")
         tab1hbox.addWidget(guardadGeneral)
-        guardadGeneral.clicked.connect(lambda checked, obj=[localidadEdit,numDiasEdit,capacidadContenedorEdit] : self.guardarDatos(obj))
+        guardadGeneral.clicked.connect(lambda checked, obj=[localidadCombo,numDiasEdit,capacidadContenedorEdit] : self.guardarDatos(obj))
 
         tab1.setLayout(tab1hbox)
 
@@ -1392,6 +1395,7 @@ class WidgetGallery(QDialog):
         contenedoresTableWidget.setColumnCount(len(headersContenedores))
         contenedoresTableWidget.setRowCount(len(datosContenedores)+1)
 
+
         j = 0
         for h in headersContenedores: 
             contenedoresTableWidget.setHorizontalHeaderItem(j,QTableWidgetItem(h))
@@ -1430,6 +1434,7 @@ class WidgetGallery(QDialog):
 
                 for d in datosContenedores:
                     writer.writerow(d)
+
 
         tab3hbox.addWidget(contenedoresTableWidget)
         guardarContenedoresB = QPushButton(self)
@@ -1471,7 +1476,7 @@ class WidgetGallery(QDialog):
     def guardarDatos(self,obj):
         # shost is a QString object
         
-        datosPlanificar['Localidad'] = obj[0].text()
+        datosPlanificar['Localidad'] = str(obj[0].currentText())
         datosPlanificar['numDias'] = obj[1].text()
         datosPlanificar['capacidadContenedor'] = obj[2].text()
 
