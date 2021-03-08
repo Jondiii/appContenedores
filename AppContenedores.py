@@ -56,7 +56,7 @@ localidad = ""
 numDias = 0
 capacidadContenedor = 0  
 
-headers = ['Camión','Capacidad','Velocidad','Funcionando']
+headers = ['Camion','Capacidad','Velocidad','Funcionando']
 data = pd.read_csv('Data/Camiones.csv', delimiter=',', header=0, names=headers)
 datos = data.values.tolist() 
 
@@ -917,7 +917,7 @@ def funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal,locali
   text_file = open("Data/sample.txt", "w")
   now = datetime.now()
   dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
-  text_file.write("Fecha de creación: {}\n\n".format(dt_string))
+  text_file.write("Fecha de creacion: {}\n\n".format(dt_string))
   if (len(data['datos'])!=len(plan)):
     raise Exception("El número de contenedores en el plan y en el data no coinciden")
 
@@ -945,7 +945,7 @@ def funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal,locali
   
   dia = 1
   text_file.write("- - - - - - - - - - - - - - - - - -  \n")
-  text_file.write("PLANIFICACIÓN de {} \n".format(localidad))
+  text_file.write("PLANIFICACION de {} \n".format(localidad))
   text_file.write("- - - - - - - - - - - - - - - - - -  \n")
 
   while dia <= numDias:
@@ -971,7 +971,7 @@ def funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal,locali
         indices.append(contador)
       contador  += 1
     
-    text_file.write("#Indice de los contenedores a recoger el día {}\n".format(dia))
+    text_file.write("#Indice de los contenedores a recoger el dia {}\n".format(dia))
     text_file.write("Indices: {}\n".format(indices))
     #print("#Indice de los contenedores a recoger el día" , dia)
     #print("Indices:" , indices)
