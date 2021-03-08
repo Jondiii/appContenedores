@@ -1,0 +1,24 @@
+Errores:
+    - Cuando se le da a Guardar en Contenedores sin hacer cambios sale Index out of range en la línea 1374.
+    
+    - Cuando se le da a Guardar en Camiones habiendo añadido un camión sale Index out of range en la línea 1374. También
+        sucede si hacemos doble click en esa fila pero no llegamos a añadir nada.
+
+    - Cuando se planifica habiendo modificado algún valor de los camiones existentes y sin haber añadido número de días ni
+        capacidad contenedores sale invalid literal for int() with base 10: '' en la línea 456 / 1550.
+
+    - Cuando se planifica sin haber modificado nada y sin añadir número de días ni capacidad contenedores sale
+        division by zero en la línea 124.
+
+    - Si se planifica varias veces seguidas sin cerrar la app, se van añadiendo nan en el listado de contenedores de
+        sample.txt. Se ha guardado un ejemplo de esto en sampleErroneo.txt.
+
+    - Cada vez que se cierra la app sale "Release of profile requested but WebEnginePage still not deleted. Expect troubles !"
+
+TODOs:
+    - Que Resultados se actualice cada vez que le demos a planificar.
+    - Que Plan se actualice cada vez que le demos a planificar.
+    - Añadir tabs por cada día planificado.
+
+Ideas:
+    - Tener ficheros de contenedores listos para leer directamente por cada municipio.
