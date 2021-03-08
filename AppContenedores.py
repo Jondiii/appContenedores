@@ -46,7 +46,7 @@ from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QDateTimeEdit,
         QSlider, QSpinBox, QStyleFactory, QTableWidget, QTabWidget, QTextEdit,
         QVBoxLayout, QWidget, QTableWidgetItem, QFormLayout, QPlainTextEdit)
 
-
+from datetime import datetime
 #https://github.com/pyqt/examples/tree/_/src/02%20PyQt%20Widgets
 #https://stackoverflow.com/questions/52010524/widgets-placement-in-tabs
 #https://realpython.com/python-pyqt-gui-calculator/
@@ -57,7 +57,7 @@ numDias = 0
 capacidadContenedor = 0  
 
 headers = ['Camión','Capacidad','Velocidad','Funcionando']
-data = pd.read_csv('Data/test.csv', delimiter=',', header=0, names=headers)
+data = pd.read_csv('Data/Camiones.csv', delimiter=',', header=0, names=headers)
 datos = data.values.tolist() 
 
 #print(datos)
@@ -915,8 +915,9 @@ def solucionaProblema(data):
 def funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal,localidad):
 
   text_file = open("Data/sample.txt", "w")
-  
- 
+  now = datetime.now()
+  dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
+  text_file.write("Fecha de creación: {}\n\n".format(dt_string))
   if (len(data['datos'])!=len(plan)):
     raise Exception("El número de contenedores en el plan y en el data no coinciden")
 
@@ -1038,9 +1039,9 @@ def funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal,locali
             text_file.write(format([indices[i] for i in element]))
           #text_file.write("\n")
        
-        text_file.write("\n - Distancia Total: {}m\n".format(resultado['total_distance']))
-        text_file.write(" - Carga Total: : {}toneladas\n".format(resultado['total_load']))
-        text_file.write(" - Distancia Total: {}min\n".format(resultado['total_time']))
+        text_file.write("\n - Distancia Total: {} m\n".format(resultado['total_distance']))
+        text_file.write(" - Carga Total: : {} toneladas\n".format(resultado['total_load']))
+        text_file.write(" - Distancia Total: {} min\n".format(resultado['total_time']))
         #print("\n - Distancia Total: ", resultado['total_distance'], "m")
         #print(" - Carga Total: ", resultado['total_load'], "toneladas")
         #print(" - Tiempo Total: ", resultado['total_time'], "min")
@@ -1238,7 +1239,7 @@ def optimizacion(planInicial, costeInicial, ncontenedores, estadoContenedores, a
           V E N T A N A   
 ------------------------------------
 '''
-listaLocalidades = pd.read_csv("https://raw.githubusercontent.com/Jondiii/appContenedores/master/localidades.txt",delimiter=sep, header=header)
+listaLocalidades = pd.read_csv("https://raw.githubusercontent.com/Jondiii/appContenedores/master/Data/localidades.txt",delimiter=sep, header=header)
 
 
 class WidgetGallery(QDialog):
@@ -1377,7 +1378,7 @@ class WidgetGallery(QDialog):
                 row = 0
                 col += 1
 
-            with open("test.csv", "w", newline='') as f:
+            with open("Camiones.csv", "w", newline='') as f:
                 writer = csv.writer(f, delimiter=',')
                 writer.writerow(headers) # write the header
                 # write the actual content line by line
