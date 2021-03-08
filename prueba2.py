@@ -1610,8 +1610,8 @@ class WidgetGallery(QDialog):
                     listaR.append(resultado[d]['listaRutas'][ncam])
                     #representarContenedores(listaR, data, localidad)
                     ncam +=1
-
-                representarContenedores(listaR,data,localidad, d, resultado, demandas)
+                #saa las rutas simples del principio 
+                #representarContenedores(listaR,data,localidad, d, resultado, demandas)
                 #print("PUEDE QUE NO SE ESTÉN REPRESENTANDO LAS DEMANDAS CORRECTAMENTE EN EL GRÁFICO.")
                 d += 1
 
