@@ -45,7 +45,7 @@ from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QDateTimeEdit,
         QProgressBar, QPushButton, QRadioButton, QScrollBar, QSizePolicy,
         QSlider, QSpinBox, QStyleFactory, QTableWidget, QTabWidget, QTextEdit,
         QVBoxLayout, QWidget, QTableWidgetItem, QFormLayout, QPlainTextEdit)
-
+import time
 from datetime import datetime
 #https://github.com/pyqt/examples/tree/_/src/02%20PyQt%20Widgets
 #https://stackoverflow.com/questions/52010524/widgets-placement-in-tabs
@@ -1486,12 +1486,10 @@ class WidgetGallery(QDialog):
         tab5hbox.setContentsMargins(5, 5, 5, 5)
         text_edit = QPlainTextEdit()
 
-        text=open('Data/sample.txt').read()
+        text = open('Data/sample.txt').read()
         text_edit.setReadOnly(True)
         text_edit.appendPlainText(text)
         tab5hbox.addWidget(text_edit)
-        
-        
         tab5.setLayout(tab5hbox)
 
         self.bottomLeftTabWidget.addTab(tab1, "&General")
@@ -1633,8 +1631,14 @@ if __name__ == '__main__':
     gallery = WidgetGallery()
     
     gallery.show()
-
-
+    '''
+    #---------------add this--------------------
+    gallery.__timer = QTimer()
+    gallery.__timer.timeout.connect(gallery.ontimeout)
+    gallery.__timer.start(1000)
+    #-------------------------------------------
+    '''
+    gallery.show()
     
     sys.exit(app.exec_()) 
 
