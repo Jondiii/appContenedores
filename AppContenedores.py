@@ -57,13 +57,13 @@ numDias = 0
 capacidadContenedor = 0  
 
 headers = ['Camión','Capacidad','Velocidad','Funcionando']
-data = pd.read_csv('test.csv', delimiter=',', header=0, names=headers)
+data = pd.read_csv('Data/test.csv', delimiter=',', header=0, names=headers)
 datos = data.values.tolist() 
 
 #print(datos)
 
 headersContenedores = ["ID Contenedor", "Estado Inicial", "Aumento Diario"]
-dataContenedores = pd.read_csv('Contenedores.csv', delimiter=',', header=0, names=headersContenedores)
+dataContenedores = pd.read_csv('Data/Contenedores.csv', delimiter=',', header=0, names=headersContenedores)
 datosContenedores = dataContenedores.values.tolist() 
 
 #print(datosContenedores)
@@ -914,7 +914,7 @@ def solucionaProblema(data):
 
 def funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal,localidad):
 
-  text_file = open("sample.txt", "w")
+  text_file = open("Data/sample.txt", "w")
   
  
   if (len(data['datos'])!=len(plan)):
@@ -1485,7 +1485,7 @@ class WidgetGallery(QDialog):
         tab5hbox.setContentsMargins(5, 5, 5, 5)
         text_edit = QPlainTextEdit()
 
-        text=open('sample.txt').read()
+        text=open('Data/sample.txt').read()
         text_edit.setReadOnly(True)
         text_edit.appendPlainText(text)
         tab5hbox.addWidget(text_edit)
