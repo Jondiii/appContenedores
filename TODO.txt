@@ -1,6 +1,6 @@
 Errores:
     - Cuando se le da a Guardar en Contenedores sin hacer cambios sale Index out of range en la línea 1374.
-    
+
     - Cuando se le da a Guardar en Camiones habiendo añadido un camión sale Index out of range en la línea 1374. También
         sucede si hacemos doble click en esa fila pero no llegamos a añadir nada.
 
@@ -14,6 +14,8 @@ Errores:
         sample.txt. Se ha guardado un ejemplo de esto en sampleErroneo.txt.
 
     - Cada vez que se cierra la app sale "Release of profile requested but WebEnginePage still not deleted. Expect troubles !"
+
+    - Eliminar las tildes que se guardan en el txt.
 
 TODOs:
     - Que Resultados se actualice cada vez que le demos a planificar.
