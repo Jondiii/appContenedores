@@ -44,7 +44,8 @@ from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QDateTimeEdit,
         QDial, QDialog, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit,
         QProgressBar, QPushButton, QRadioButton, QScrollBar, QSizePolicy,
         QSlider, QSpinBox, QStyleFactory, QTableWidget, QTabWidget, QTextEdit,
-        QVBoxLayout, QWidget, QTableWidgetItem, QFormLayout)
+        QVBoxLayout, QWidget, QTableWidgetItem, QFormLayout, QPlainTextEdit)
+
 
 #https://github.com/pyqt/examples/tree/_/src/02%20PyQt%20Widgets
 #https://stackoverflow.com/questions/52010524/widgets-placement-in-tabs
@@ -911,7 +912,11 @@ def solucionaProblema(data):
 
 """#### Funcion"""
 
-def funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal):
+def funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal,localidad):
+
+  text_file = open("sample.txt", "w")
+  
+ 
   if (len(data['datos'])!=len(plan)):
     raise Exception("El número de contenedores en el plan y en el data no coinciden")
 
@@ -926,8 +931,11 @@ def funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal):
   #capacidadTotal = data['num_vehicles'] * data['vehicle_capacities'][0]
   demandas = []
 
-  print("Estado inicial: ", dfToList(estadoContenedores))
-  print("#Cantidad de toneladas que tienen los contenedores antes de empezar a recoger\n")
+  #print("Estado inicial: ",(dfToList(estadoContenedores)))
+  #print("#Cantidad de toneladas que tienen los contenedores antes de empezar a recoger\n")
+  #text_file.write("Estado inicial: {} \n".format(dfToList(estadoContenedores)))
+  #text_file.write("#Cantidad de toneladas que tienen los contenedores antes de empezar a recoger\n")
+  
 
   while i <= numDias:
     # tantos "Números altos" como días vayamos a planificar (+1)
@@ -935,13 +943,14 @@ def funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal):
     i += 1
   
   dia = 1
-  print("- - - - - - - - - - - - - - - - - -  ")
-  print("PLANIFICACIÓN de ", localidad)
-  print("- - - - - - - - - - - - - - - - - -  ")
+  text_file.write("- - - - - - - - - - - - - - - - - -  \n")
+  text_file.write("PLANIFICACIÓN de {} \n".format(localidad))
+  text_file.write("- - - - - - - - - - - - - - - - - -  \n")
 
   while dia <= numDias:
-    print("\nDIA: ", dia)
-    print("- - - - - - - ")
+    text_file.write("\nDIA: {}\n".format(dia))
+    text_file.write("- - - - - - - \n")
+    
     indicesRecoger = []
 
     indices = []
@@ -953,16 +962,18 @@ def funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal):
     demanda = contenedoresARecoger*(estadoContenedores)
     #data['demands'] = demanda
 
-    print("Cont a recoger: ", dfToList(contenedoresARecoger))
-    
+    #print("Cont a recoger: ", dfToList(contenedoresARecoger))
+    #text_file.write("Cont a recoger: {}\n".format(dfToList(contenedoresARecoger)))
     contador = int(0)
     for c in dfToList(contenedoresARecoger): 
       if (c == 1): 
         indices.append(contador)
       contador  += 1
-  
-    print("#Indice de los contenedores a recoger el día" , dia)
-    print("Indices:" , indices)
+    
+    text_file.write("#Indice de los contenedores a recoger el día {}\n".format(dia))
+    text_file.write("Indices: {}\n".format(indices))
+    #print("#Indice de los contenedores a recoger el día" , dia)
+    #print("Indices:" , indices)
     
     demandaActual = []
     #print("Demanda: ", dfToList(demanda))
@@ -970,7 +981,8 @@ def funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal):
       if (d != 0): 
         demandaActual.append(d)
     
-    print("Demanda: ", (demandaActual))
+    text_file.write("Demanda: {}\n".format(demandaActual))
+    #print("Demanda: ", (demandaActual))
 
     cont = 0
     for i in plan:
@@ -987,8 +999,10 @@ def funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal):
     if (demanda[demanda>100].isnull().sum().sum()!=len(demanda)): 
       #Salimos del bucle, dejar de planificar el resto de días.
       desborde = list(np.where(demanda>100)[0])
-      print("Contenedor(es) desbordado(s):", desborde)
-      print("#contenedor desborda cuando demanda > 100")
+      text_file.write("Contenedor(es) desbordado(s): {}\n".format(desborde))
+      text_file.write("#contenedor desborda cuando demanda > 100\n")
+      #print("Contenedor(es) desbordado(s):", desborde)
+      #print("#contenedor desborda cuando demanda > 100")
       
       break
 
@@ -1014,23 +1028,31 @@ def funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal):
         
         #print("  Solución encontrada. Resultado: ", resultado)
         nuevasRutas = []
-        print("Rutas: ")
+        #print("Rutas: ")
+        text_file.write("Rutas: \n")
         #Solo imprime las rutas que pasen 
         for element in resultado['listaRutas']:
           nuevasRutas.append([indices[i] for i in element])
           if (len(element) > 2):
-            print([indices[i] for i in element])
-            
-        print("\n - Distancia Total: ", resultado['total_distance'], "m")
-        print(" - Carga Total: ", resultado['total_load'], "toneladas")
-        print(" - Tiempo Total: ", resultado['total_time'], "min")
+            ##print([indices[i] for i in element])
+            text_file.write(format([indices[i] for i in element]))
+          #text_file.write("\n")
+       
+        text_file.write("\n - Distancia Total: {}m\n".format(resultado['total_distance']))
+        text_file.write(" - Carga Total: : {}toneladas\n".format(resultado['total_load']))
+        text_file.write(" - Distancia Total: {}min\n".format(resultado['total_time']))
+        #print("\n - Distancia Total: ", resultado['total_distance'], "m")
+        #print(" - Carga Total: ", resultado['total_load'], "toneladas")
+        #print(" - Tiempo Total: ", resultado['total_time'], "min")
         #print(nuevasRutas)
         resultado['listaRutas'] = nuevasRutas
   
       else:  # Si el plan para ese día no es válido, no se puede recoger con los camiones que tenemos
         costes[dia-1] = int(costes[dia-1]+estadoContenedores.sum())
         estadoContenedores = estadoContenedores + aumentoDiario
-        print("  No tengo suficientes camiones: ", costes[dia-1])
+
+        text_file.write("  No tengo suficientes camiones: {}\n".format(costes[dia-1]))
+        #print("  No tengo suficientes camiones: ", costes[dia-1])
         
     dataOriginal['demands'] = dfToList(estadoContenedores)
     demandas.append(dfToList(estadoContenedores))
@@ -1045,6 +1067,9 @@ def funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal):
    # demandas.append(dfToList(estadoContenedores))
    
     dia += 1
+
+  text_file.write("\nCoste: {}\n".format(costes))    
+  text_file.close()
 
   return costes, results, demandas
 
@@ -1203,7 +1228,8 @@ def optimizacion(planInicial, costeInicial, ncontenedores, estadoContenedores, a
     print("\n\nMejor coste iteración {0}: {1}\n".format(i, mejorCoste))
 
     i += 1
-
+  
+  
   return planInicial, costeInicial
 
 
@@ -1223,26 +1249,12 @@ class WidgetGallery(QDialog):
         self._dataContenedores = datosContenedores
         self.setFixedWidth(700)
         self.setFixedHeight(600)
-
-        self.originalPalette = QApplication.palette()
-        
-        styleComboBox = QComboBox()
-        styleComboBox.addItems(QStyleFactory.keys())
-
-        styleLabel = QLabel("&Style:")
-        styleLabel.setBuddy(styleComboBox)
-
-        self.useStylePaletteCheckBox = QCheckBox("&Use style's standard palette")
-        self.useStylePaletteCheckBox.setChecked(True)
-
-    
+  
         self.createBottomLeftTabWidget()
         
         topLayout = QHBoxLayout()
-        topLayout.addWidget(styleLabel)
-        topLayout.addWidget(styleComboBox)
         topLayout.addStretch(1)
-        topLayout.addWidget(self.useStylePaletteCheckBox)
+   
 
         mainLayout = QVBoxLayout()
         mainLayout.addLayout(topLayout)
@@ -1332,7 +1344,7 @@ class WidgetGallery(QDialog):
     
         camionesTableWidget=QTableWidget()
         camionesTableWidget.setColumnCount(len(headers))
-        camionesTableWidget.setRowCount(len(datos))
+        camionesTableWidget.setRowCount(len(datos)+1)
 
         j = 0
         for h in headers: 
@@ -1393,7 +1405,7 @@ class WidgetGallery(QDialog):
       
         contenedoresTableWidget=QTableWidget()
         contenedoresTableWidget.setColumnCount(len(headersContenedores))
-        contenedoresTableWidget.setRowCount(len(datosContenedores)+1)
+        contenedoresTableWidget.setRowCount(len(datosContenedores))
 
 
         j = 0
@@ -1464,12 +1476,28 @@ class WidgetGallery(QDialog):
         
         #browser.show() #Si descomentamos esto se abre y se cierra una ventana antes de que salga la ventana de la aplicación.
 
-        tab4.setLayout(tab4hbox)
+        
+        '''
+        TAB 5 - Resultados 
+        '''
+        tab5 = QWidget()
+        tab5hbox = QHBoxLayout()
+        tab5hbox.setContentsMargins(5, 5, 5, 5)
+        text_edit = QPlainTextEdit()
+
+        text=open('sample.txt').read()
+        text_edit.setReadOnly(True)
+        text_edit.appendPlainText(text)
+        tab5hbox.addWidget(text_edit)
+        
+        
+        tab5.setLayout(tab5hbox)
 
         self.bottomLeftTabWidget.addTab(tab1, "&General")
         self.bottomLeftTabWidget.addTab(tab2, "&Camiones")
         self.bottomLeftTabWidget.addTab(tab3, "&Contenedores")
         self.bottomLeftTabWidget.addTab(tab4, "&Plan")
+        self.bottomLeftTabWidget.addTab(tab5, "&Resultados")
 
 
 
@@ -1561,7 +1589,7 @@ class WidgetGallery(QDialog):
 
         print("SOLUCIÓN")
 
-        coste, resultado, demandas = funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal)
+        coste, resultado, demandas = funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal, localidad)
         print("\n\nCÓDIGO DE COLORES")
         print("- - - - - - - - - -")
         print("Azul - correctas")
