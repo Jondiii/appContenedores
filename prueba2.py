@@ -448,7 +448,7 @@ def calculaDemandas(capacidadCont, df, ceros=False):
   return demands
 
 def procesaVector(vector, separadorV):
-  str1 = ''.join(str(e) for e in vector)
+  str1 = ','.join(str(e) for e in vector)
   return str1.split(separadorV)
 
 def fromCharToInt(vector):
@@ -1221,7 +1221,8 @@ class WidgetGallery(QDialog):
         
         self._dataCamiones = datos
         self._dataContenedores = datosContenedores
-
+        self.setFixedWidth(700)
+        self.setFixedHeight(600)
 
         self.originalPalette = QApplication.palette()
         
@@ -1288,7 +1289,8 @@ class WidgetGallery(QDialog):
         tab1 = QWidget()
         
         tab1hbox = QFormLayout()
-        
+        #localidadCombo = QComboBox()
+        #localidadCombo.addItems(QStyleFactory.keys())
         localidadEdit = QLineEdit(self)
         localidadLabel = QLabel("&Localidad:", self)
         localidadLabel.setBuddy(localidadEdit)
@@ -1323,9 +1325,8 @@ class WidgetGallery(QDialog):
         camionesTableWidget = QTableWidget(10, 10)
 
         tab2hbox = QHBoxLayout()
-        tab2hbox.setContentsMargins(5, 5, 5, 5)
-      
-
+        tab2hbox.setContentsMargins(10, 10, 10, 10)
+    
         camionesTableWidget=QTableWidget()
         camionesTableWidget.setColumnCount(len(headers))
         camionesTableWidget.setRowCount(len(datos))
@@ -1369,16 +1370,11 @@ class WidgetGallery(QDialog):
                 for d in datos:
                     writer.writerow(d)
 
-
-
         tab2hbox.addWidget(camionesTableWidget)
         guardarCamionesB= QPushButton(self)
         guardarCamionesB.setText("Guardar")
         tab2hbox.addWidget(guardarCamionesB)
         guardarCamionesB.clicked.connect(guardarCamiones)
-
-
-
         tab2.setLayout(tab2hbox)
 
    
@@ -1435,7 +1431,6 @@ class WidgetGallery(QDialog):
                 for d in datosContenedores:
                     writer.writerow(d)
 
-
         tab3hbox.addWidget(contenedoresTableWidget)
         guardarContenedoresB = QPushButton(self)
         guardarContenedoresB.setText("Guardar")
@@ -1482,7 +1477,6 @@ class WidgetGallery(QDialog):
 
     def planificar(self): 
 
-      
         for dc in datosContenedores: 
             datosPlanificar['estadoInicial'].append(dc[1])
             datosPlanificar['aumentoDiario'].append(dc[2])
@@ -1521,7 +1515,7 @@ class WidgetGallery(QDialog):
       
         capacidadCamiones = fromCharToInt(procesaVector(capacidadCamiones,separadorV))
         data = create_data_model2(localidad, capacidadCamiones, nCamiones, depot, capacidadContenedor)
-
+        
         ncontenedores = len(data['distance_matrix']) 
 
         i = 0 
