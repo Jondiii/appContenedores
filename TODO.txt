@@ -16,7 +16,7 @@ Errores:
 
     - Cada vez que se cierra la app sale "Release of profile requested but WebEnginePage still not deleted. Expect troubles !"
 
-    - Eliminar las tildes que se guardan en el txt.
+    - No se llama correctamente al método que crea los mapas. Tampoco se están pasando bien los parámetros.
 
 TODOs:
     - Que Resultados se actualice cada vez que le demos a planificar.
