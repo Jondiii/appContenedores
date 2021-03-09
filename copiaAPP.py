@@ -449,11 +449,11 @@ def calculaDemandas(capacidadCont, df, ceros=False):
   return demands
 
 def procesaVector(vector, separadorV):
-  str1 = ','.join(str(e) for e in vector)
-  return str1.split(separadorV)
+    str1 = ','.join(str(e) for e in vector)
+    return str1.split(separadorV)
 
 def fromCharToInt(vector):
-  return [int(s) for s in vector]
+  return [(int(s)) for s in vector]
 
 """####Crear nuevo DataModel
 
@@ -1364,26 +1364,29 @@ class WidgetGallery(QDialog):
             i += 1 
 
         def guardarCamiones(self):
-        
+
+
+
             row = 0
             col = 0
             for i in range(camionesTableWidget.columnCount()):
                 for x in range(camionesTableWidget.rowCount()):
                     try:
                         text = str(camionesTableWidget.item(row, col).text())
-                        datos[x][i] = text
+                        datos[x][i] = int(text)
+                        
                         row += 1
                     except AttributeError:
                         row += 1
                 row = 0
                 col += 1
-
-            with open("Camiones.csv", "w", newline='') as f:
+            print("Datos Camiones")
+            print(datos)
+            with open("Data/Camiones.csv", "w", newline='') as f:
                 writer = csv.writer(f, delimiter=',')
                 writer.writerow(headers) # write the header
                 # write the actual content line by line
-
-                for d in datos:
+                for d in datosNuevo:
                     writer.writerow(d)
 
         tab2hbox.addWidget(camionesTableWidget)
@@ -1433,18 +1436,17 @@ class WidgetGallery(QDialog):
                 for x in range(contenedoresTableWidget.rowCount()):
                     try:
                         text = str(contenedoresTableWidget.item(row, col).text())
-                        datos[x][i] = text
+                        datosContenedores[x][i] = int(text) 
                         row += 1
                     except AttributeError:
                         row += 1
                 row = 0
                 col += 1
 
-            with open("Contenedores.csv", "w", newline='') as f:
+            with open("Data/Contenedores.csv", "w", newline='') as f:
                 writer = csv.writer(f, delimiter=',')
                 writer.writerow(headers) # write the header
                 # write the actual content line by line
-
                 for d in datosContenedores:
                     writer.writerow(d)
 
@@ -1508,17 +1510,17 @@ class WidgetGallery(QDialog):
         datosPlanificar['capacidadContenedor'] = obj[2].text()
 
     def planificar(self): 
-
+        #Datos Contenedores
         for dc in datosContenedores: 
             datosPlanificar['estadoInicial'].append(dc[1])
             datosPlanificar['aumentoDiario'].append(dc[2])
-
+        #Datos Camiones 
         for c in datos: 
             if c[3] == 1: 
-                datosPlanificar['numCamiones']  += 1
+                datosPlanificar['numCamiones'] += 1
                 datosPlanificar['capacidadCamiones'].append(c[1])
                 datosPlanificar['velocidadCamiones'].append(c[2])
-
+ 
 
         ''' 
         VARIABLES 
@@ -1542,12 +1544,11 @@ class WidgetGallery(QDialog):
         #localidad = 'ABADINO'
         #nCamiones = 5
         #capacidadCamiones = 700
-      
-
-      
+    
         capacidadCamiones = fromCharToInt(procesaVector(capacidadCamiones,separadorV))
         data = create_data_model2(localidad, capacidadCamiones, nCamiones, depot, capacidadContenedor)
-        
+        print("capacidadCamiones")
+        print(capacidadCamiones)
         ncontenedores = len(data['distance_matrix']) 
 
         i = 0 
@@ -1586,15 +1587,16 @@ class WidgetGallery(QDialog):
         print("######################\n")
 
 
-        print("SOLUCIÓN")
+       #print("SOLUCIÓN")
 
         coste, resultado, demandas = funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal, localidad)
+        '''
         print("\n\nCÓDIGO DE COLORES")
         print("- - - - - - - - - -")
         print("Azul - correctas")
         print("Amarillo - límite")
         print("Rojo - desbordadas")
-
+        '''
         #print("resultado: ", resultado)
 
         d = 0
@@ -1630,14 +1632,6 @@ if __name__ == '__main__':
     
     gallery = WidgetGallery()
     
-    gallery.show()
-    '''
-    #---------------add this--------------------
-    gallery.__timer = QTimer()
-    gallery.__timer.timeout.connect(gallery.ontimeout)
-    gallery.__timer.start(1000)
-    #-------------------------------------------
-    '''
     gallery.show()
     
     sys.exit(app.exec_()) 
