@@ -9,6 +9,7 @@ Errores:
 
     - Cuando se planifica sin haber modificado nada y sin añadir número de días ni capacidad contenedores sale
         division by zero en la línea 124.
+        
 
     - Si se planifica varias veces seguidas sin cerrar la app, se van añadiendo nan en el listado de contenedores de
         sample.txt. Se ha guardado un ejemplo de esto en sampleErroneo.txt.
