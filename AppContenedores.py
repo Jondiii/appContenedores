@@ -1370,14 +1370,14 @@ class WidgetGallery(QDialog):
                 for x in range(camionesTableWidget.rowCount()):
                     try:
                         text = str(camionesTableWidget.item(row, col).text())
-                        datos[x][i] = text
+                        datos[x][i] = int(text)
                         row += 1
                     except AttributeError:
                         row += 1
                 row = 0
                 col += 1
 
-            with open("Camiones.csv", "w", newline='') as f:
+            with open("Data/Camiones.csv", "w", newline='') as f:
                 writer = csv.writer(f, delimiter=',')
                 writer.writerow(headers) # write the header
                 # write the actual content line by line
@@ -1432,14 +1432,14 @@ class WidgetGallery(QDialog):
                 for x in range(contenedoresTableWidget.rowCount()):
                     try:
                         text = str(contenedoresTableWidget.item(row, col).text())
-                        datos[x][i] = text
+                        datosContenedores[x][i] = (text)
                         row += 1
                     except AttributeError:
                         row += 1
                 row = 0
                 col += 1
 
-            with open("Contenedores.csv", "w", newline='') as f:
+            with open("Data/Contenedores.csv", "w", newline='') as f:
                 writer = csv.writer(f, delimiter=',')
                 writer.writerow(headers) # write the header
                 # write the actual content line by line

@@ -1386,7 +1386,7 @@ class WidgetGallery(QDialog):
                 writer = csv.writer(f, delimiter=',')
                 writer.writerow(headers) # write the header
                 # write the actual content line by line
-                for d in datosNuevo:
+                for d in datos:
                     writer.writerow(d)
 
         tab2hbox.addWidget(camionesTableWidget)
