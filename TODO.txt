@@ -1,16 +1,15 @@
 Errores:
     - Cuando se le da a Guardar en Contenedores sin hacer cambios sale Index out of range en la línea 1374.
-
+    (Haizea: no me pasa)
     - Cuando se le da a Guardar en Camiones habiendo añadido un camión sale Index out of range en la línea 1374. También
         sucede si hacemos doble click en esa fila pero no llegamos a añadir nada.
-
+    
     - Cuando se planifica habiendo modificado algún valor de los camiones existentes y sin haber añadido número de días ni
         capacidad contenedores sale invalid literal for int() with base 10: '' en la línea 456 / 1550.
-
+        (solved)
     - Cuando se planifica sin haber modificado nada y sin añadir número de días ni capacidad contenedores sale
         division by zero en la línea 124.
-        
-
+        (si o si hay que poner num de días )    
     - Si se planifica varias veces seguidas sin cerrar la app, se van añadiendo nan en el listado de contenedores de
         sample.txt. Se ha guardado un ejemplo de esto en sampleErroneo.txt.
 
