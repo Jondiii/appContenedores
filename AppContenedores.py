@@ -203,7 +203,7 @@ def crearMatrizTiempos_Enrique(data):
 
 """#### Métodos intermedios
 
-El siguiente método creará el Routing Model. Para ello, primero se tiene que crear el Index Manager, los cuales se utilizan para señalizar los nodos por los que se estén pasando. Primero se pasa el número de contenedores, luego los vehículos y finalmente el punto de partida.
+El siguiente método creará el Routing Model. Para ello, primero se tiene que crear el Index Manager, los cuales se utilizan para señalizar los nodos por los que se estén pasando. Primero se pasa el n mero de contenedores, luego los vehículos y finalmente el punto de partida.
 
 Una vez tenemos el manager, creamos el modelo, que es quien se encarga de todos los cálculos, para lo que basta con pasarle el manager creado anteriormente.
 
@@ -672,7 +672,7 @@ def getRutas(data, manager, routing, solution):
           #Para el timempo
           previous_node_index = node_index
           node_index = manager.IndexToNode(index)
-          route_time += data['time_matrix'][previous_node_index][node_index];
+          route_time += data['time_matrix'][previous_node_index][node_index]
 
       ruta.append(data['depot'])
       tiempos.append(route_time)
@@ -746,7 +746,7 @@ def representarContenedores(listaRutas, data, localidad, dia, resultado, demanda
         i +=1
 
     d = dia + 1
-    title = ("Rutas del día %i" % (d)) 
+    title = ("Rutas del dia %i" % (d)) 
     plt.figure(figsize=(10, 10))
     plt.suptitle(title,  ha='center')
     plt.xlabel("Longitud")
@@ -1278,7 +1278,6 @@ class WidgetGallery(QDialog):
         self.setWindowTitle("Planificar")
         #self.changeStyle('Windows')
 
-       
     '''
     def changeStyle(self, styleName):
         QApplication.setStyle(QStyleFactory.create(styleName))
@@ -1314,13 +1313,13 @@ class WidgetGallery(QDialog):
         tab1hbox.addWidget(localidadCombo)
         
         numDiasEdit = QLineEdit(self)
-        numDiasLabel = QLabel("&Número de días:", self)
+        numDiasLabel = QLabel("&Numero de dias:", self)
         numDiasLabel.setBuddy(numDiasEdit)
         tab1hbox.addWidget(numDiasLabel)
         tab1hbox.addWidget(numDiasEdit)
 
         capacidadContenedorEdit = QLineEdit(self)
-        capacidadContenedorLabel = QLabel("Capacidad máxima de los contenedores:", self)
+        capacidadContenedorLabel = QLabel("Capacidad maxima de los contenedores:", self)
         capacidadContenedorLabel.setBuddy(capacidadContenedorEdit)
         tab1hbox.addWidget(capacidadContenedorLabel)
         tab1hbox.addWidget(capacidadContenedorEdit)
@@ -1462,19 +1461,40 @@ class WidgetGallery(QDialog):
         #https://stackoverflow.com/questions/60246282/read-a-html-file-and-display-it-in-tkinter-window
         #https://stackoverflow.com/questions/52656526/how-to-insert-a-web-browser-in-python-qt-designer
         tab4 = QWidget()
-        browser = QWebEngineView()
+        #browser = QWebEngineView()
         #browser.load(QUrl('file://' + os.path.realpath("ABADINO - dia 1.html")))
-        #browser.load(QUrl.fromLocalFile('file://' + os.path.realpath("ABADINO - dia 1.html")))
+        #browser.load(QUrl.fromLocalFile('file://' + os.path.realpath("mapa1.html")))
         #browser.load(QUrl('https://www.learnpyqt.com'))#Esto funciona en Windows, pero las dos anteriores no...
 
-        file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "ABADINO - dia 1.html"))
-        local_url = QUrl.fromLocalFile(file_path)
-        browser.load(local_url)
 
+        tabMapas = QTabWidget()
+
+        numDias = 3 #TODO
+        i = 0
+        while i < numDias:
+          file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "mapa{0}.html".format(i+1)))
+          #file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "mapa1.html"))
+          local_url = QUrl.fromLocalFile(file_path)
+          browser = QWebEngineView()
+          browser.load(local_url)
+
+          tabMapa = QWidget()
+          tabMapabox = QHBoxLayout()
+          tabMapabox.setContentsMargins(5, 5, 5, 5)
+          tabMapabox.addWidget(browser)
+          tabMapa.setLayout(tabMapabox)
+          tabMapas.addTab(tabMapa, "Dia {}".format(i+1))
+
+          i+=1
+ 
+        #tab4hbox = QHBoxLayout()
         tab4hbox = QHBoxLayout()
         tab4hbox.setContentsMargins(5, 5, 5, 5)
-        tab4hbox.addWidget(browser)
-        
+        tab4hbox.addWidget(tabMapas)
+        tab4.setLayout(tab4hbox)
+
+
+        #tab4hbox.addWidget(browser)
         #browser.show() #Si descomentamos esto se abre y se cierra una ventana antes de que salga la ventana de la aplicación.
 
         
@@ -1606,12 +1626,15 @@ class WidgetGallery(QDialog):
                 while ncam < nCamiones: 
                 # sale index out of range
             
-                    listaR.append(resultado[d]['listaRutas'][ncam])
-                    #representarContenedores(listaR, data, localidad)
-                    ncam +=1
-                #saa las rutas simples del principio 
-                #representarContenedores(listaR,data,localidad, d, resultado, demandas)
-                #print("PUEDE QUE NO SE ESTÉN REPRESENTANDO LAS DEMANDAS CORRECTAMENTE EN EL GRÁFICO.")
+                  listaR.append(resultado[d]['listaRutas'][ncam])
+                  #representarContenedores(listaR, data, localidad)
+                  ncam +=1
+                
+                mapas = get_map(lat, longi, depot, listaR)
+                
+                for mapa in mapas:
+                  mapa.save("mapa"+str(d+1)+".html")
+                
                 d += 1
 
         except:
