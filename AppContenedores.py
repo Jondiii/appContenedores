@@ -378,19 +378,20 @@ def getMin(seg):
 
 """Método que recibe los datos y devuelve las latitudes, longitudes y el depot"""
 
-def getCoordenadas(datos):
-    longitud = datos['longitude'].to_numpy()
-    latitud = datos['latitude'].to_numpy()
-    #Transformamos de UTM a Coordenadas Geográficas (Grados)
-    scrProj = pyproj.Proj(proj="utm", zone = 30, ellps="WGS84", units = "m")
-    dstProj = pyproj.Proj(proj = "longlat", ellps="WGS84", datum = "WGS84")
+def getCoordenadas(data):
+  longitud = (data['datos']['longitude'].to_numpy(dtype=float)).copy()
+  latitud = (data['datos']['latitude'].to_numpy(dtype=float)).copy()
+  #Transformamos de UTM a Coordenadas Geográficas (Grados)
+  scrProj = pyproj.Proj(proj="utm", zone = 30, ellps="WGS84", units = "m")
+  dstProj = pyproj.Proj(proj = "longlat", ellps="WGS84", datum = "WGS84")
 
-    i = 0
-    for n in datos['latitude']:
-        longitud[i],latitud[i]=pyproj.transform(scrProj,dstProj, longitud[i],latitud[i])
-        i +=1
+  i = 0
+  for n in data['datos']['latitude']:
+      longitud[i],latitud[i]=pyproj.transform(scrProj,dstProj, longitud[i],latitud[i])
+      i +=1
 
-    return latitud, longitud, [latitud[0], longitud[0]]
+  return latitud, longitud, [latitud[0], longitud[0]]
+
 
 """####Varios
 
@@ -806,8 +807,7 @@ def get_route(ruta, lat, longi):
 
   return out
 
-def get_map(datos, rutas):
-  lat, longi, depot = getCoordenadas(datos)
+def get_map(lat, longi, depot, rutas):
   mapas = []
 
   m = folium.Map(location=depot,
@@ -815,6 +815,7 @@ def get_map(datos, rutas):
 
   n = 0
   for ruta in rutas:
+    if len(ruta)>2:
       n += 1
       out = get_route(ruta, lat, longi)
       feature_group = folium.FeatureGroup(name="Ruta "+str(n))
@@ -843,7 +844,8 @@ def get_map(datos, rutas):
       for point in out['ruta']:
           i += 1
           folium.Marker(
-              locationList[point], tooltip=str(i-1)
+              locationList[point], tooltip=str(i-1),
+              popup="Hora planificada: X\nParada {0} del camión Y\nContenedor al Z%\nCamión al A%"
           ).add_to(feature_group)
 
       
@@ -1564,7 +1566,6 @@ class WidgetGallery(QDialog):
         #capacidadCamiones = 700
       
 
-      
         capacidadCamiones = fromCharToInt(procesaVector(capacidadCamiones,separadorV))
         data = create_data_model2(localidad, capacidadCamiones, nCamiones, depot, capacidadContenedor)
         
@@ -1609,36 +1610,38 @@ class WidgetGallery(QDialog):
         print("SOLUCIÓN")
 
         coste, resultado, demandas = funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal, localidad)
+        lat, longi, depot = getCoordenadas(data)
+
         print("\n\nCÓDIGO DE COLORES")
         print("- - - - - - - - - -")
         print("Azul - correctas")
         print("Amarillo - límite")
         print("Rojo - desbordadas")
 
-        #print("resultado: ", resultado)
 
         d = 0
-        try:
-            while d < numDias:  
-                listaR = []
-                ncam = 0
+        #try:
+        while d < numDias:  
+            listaR = []
+            ncam = 0
 
-                while ncam < nCamiones: 
-                # sale index out of range
+            while ncam < nCamiones: 
+            # sale index out of range
+        
+              listaR.append(resultado[d]['listaRutas'][ncam])
+              #representarContenedores(listaR, data, localidad)
+              ncam +=1
             
-                  listaR.append(resultado[d]['listaRutas'][ncam])
-                  #representarContenedores(listaR, data, localidad)
-                  ncam +=1
-                
-                mapas = get_map(lat, longi, depot, listaR)
-                
-                for mapa in mapas:
-                  mapa.save("mapa"+str(d+1)+".html")
-                
-                d += 1
+            print(listaR)
+            mapas = get_map(lat, longi, depot, listaR)
+            
+            for mapa in mapas:
+              mapa.save("mapa"+str(d+1)+".html")
+            
+            d += 1
 
-        except:
-            print("Las rutas del día {} hace que se desborden contenedores. Se ha dejado de planificar.".format(d+1))
+        #except:
+            #print("Las rutas del día {} hace que se desborden contenedores. Se ha dejado de planificar.".format(d+1))
 
         print("\nCostes: ", coste)      
 
