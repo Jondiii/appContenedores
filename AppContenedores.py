@@ -45,7 +45,7 @@ from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QDateTimeEdit,
         QProgressBar, QPushButton, QRadioButton, QScrollBar, QSizePolicy,
         QSlider, QSpinBox, QStyleFactory, QTableWidget, QTabWidget, QTextEdit,
         QVBoxLayout, QWidget, QTableWidgetItem, QFormLayout, QPlainTextEdit)
-
+import time
 from datetime import datetime
 #https://github.com/pyqt/examples/tree/_/src/02%20PyQt%20Widgets
 #https://stackoverflow.com/questions/52010524/widgets-placement-in-tabs
@@ -56,7 +56,7 @@ localidad = ""
 numDias = 0
 capacidadContenedor = 0  
 
-headers = ['Camión','Capacidad','Velocidad','Funcionando']
+headers = ['Camion','Capacidad','Velocidad','Funcionando']
 data = pd.read_csv('Data/Camiones.csv', delimiter=',', header=0, names=headers)
 datos = data.values.tolist() 
 
@@ -203,7 +203,7 @@ def crearMatrizTiempos_Enrique(data):
 
 """#### Métodos intermedios
 
-El siguiente método creará el Routing Model. Para ello, primero se tiene que crear el Index Manager, los cuales se utilizan para señalizar los nodos por los que se estén pasando. Primero se pasa el número de contenedores, luego los vehículos y finalmente el punto de partida.
+El siguiente método creará el Routing Model. Para ello, primero se tiene que crear el Index Manager, los cuales se utilizan para señalizar los nodos por los que se estén pasando. Primero se pasa el n mero de contenedores, luego los vehículos y finalmente el punto de partida.
 
 Una vez tenemos el manager, creamos el modelo, que es quien se encarga de todos los cálculos, para lo que basta con pasarle el manager creado anteriormente.
 
@@ -378,19 +378,20 @@ def getMin(seg):
 
 """Método que recibe los datos y devuelve las latitudes, longitudes y el depot"""
 
-def getCoordenadas(datos):
-    longitud = datos['longitude'].to_numpy()
-    latitud = datos['latitude'].to_numpy()
-    #Transformamos de UTM a Coordenadas Geográficas (Grados)
-    scrProj = pyproj.Proj(proj="utm", zone = 30, ellps="WGS84", units = "m")
-    dstProj = pyproj.Proj(proj = "longlat", ellps="WGS84", datum = "WGS84")
+def getCoordenadas(data):
+  longitud = (data['datos']['longitude'].to_numpy(dtype=float)).copy()
+  latitud = (data['datos']['latitude'].to_numpy(dtype=float)).copy()
+  #Transformamos de UTM a Coordenadas Geográficas (Grados)
+  scrProj = pyproj.Proj(proj="utm", zone = 30, ellps="WGS84", units = "m")
+  dstProj = pyproj.Proj(proj = "longlat", ellps="WGS84", datum = "WGS84")
 
-    i = 0
-    for n in datos['latitude']:
-        longitud[i],latitud[i]=pyproj.transform(scrProj,dstProj, longitud[i],latitud[i])
-        i +=1
+  i = 0
+  for n in data['datos']['latitude']:
+      longitud[i],latitud[i]=pyproj.transform(scrProj,dstProj, longitud[i],latitud[i])
+      i +=1
 
-    return latitud, longitud, [latitud[0], longitud[0]]
+  return latitud, longitud, [latitud[0], longitud[0]]
+
 
 """####Varios
 
@@ -672,7 +673,7 @@ def getRutas(data, manager, routing, solution):
           #Para el timempo
           previous_node_index = node_index
           node_index = manager.IndexToNode(index)
-          route_time += data['time_matrix'][previous_node_index][node_index];
+          route_time += data['time_matrix'][previous_node_index][node_index]
 
       ruta.append(data['depot'])
       tiempos.append(route_time)
@@ -746,7 +747,7 @@ def representarContenedores(listaRutas, data, localidad, dia, resultado, demanda
         i +=1
 
     d = dia + 1
-    title = ("Rutas del día %i" % (d)) 
+    title = ("Rutas del dia %i" % (d)) 
     plt.figure(figsize=(10, 10))
     plt.suptitle(title,  ha='center')
     plt.xlabel("Longitud")
@@ -806,8 +807,7 @@ def get_route(ruta, lat, longi):
 
   return out
 
-def get_map(datos, rutas):
-  lat, longi, depot = getCoordenadas(datos)
+def get_map(lat, longi, depot, rutas):
   mapas = []
 
   m = folium.Map(location=depot,
@@ -815,6 +815,7 @@ def get_map(datos, rutas):
 
   n = 0
   for ruta in rutas:
+    if len(ruta)>2:
       n += 1
       out = get_route(ruta, lat, longi)
       feature_group = folium.FeatureGroup(name="Ruta "+str(n))
@@ -843,7 +844,8 @@ def get_map(datos, rutas):
       for point in out['ruta']:
           i += 1
           folium.Marker(
-              locationList[point], tooltip=str(i-1)
+              locationList[point], tooltip=str(i-1),
+              popup="Hora planificada: X\nParada {0} del camión Y\nContenedor al Z%\nCamión al A%"
           ).add_to(feature_group)
 
       
@@ -917,7 +919,7 @@ def funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal,locali
   text_file = open("Data/sample.txt", "w")
   now = datetime.now()
   dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
-  text_file.write("Fecha de creación: {}\n\n".format(dt_string))
+  text_file.write("Fecha de creacion: {}\n\n".format(dt_string))
   if (len(data['datos'])!=len(plan)):
     raise Exception("El número de contenedores en el plan y en el data no coinciden")
 
@@ -945,7 +947,7 @@ def funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal,locali
   
   dia = 1
   text_file.write("- - - - - - - - - - - - - - - - - -  \n")
-  text_file.write("PLANIFICACIÓN de {} \n".format(localidad))
+  text_file.write("PLANIFICACION de {} \n".format(localidad))
   text_file.write("- - - - - - - - - - - - - - - - - -  \n")
 
   while dia <= numDias:
@@ -971,7 +973,7 @@ def funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal,locali
         indices.append(contador)
       contador  += 1
     
-    text_file.write("#Indice de los contenedores a recoger el día {}\n".format(dia))
+    text_file.write("#Indice de los contenedores a recoger el dia {}\n".format(dia))
     text_file.write("Indices: {}\n".format(indices))
     #print("#Indice de los contenedores a recoger el día" , dia)
     #print("Indices:" , indices)
@@ -1278,7 +1280,6 @@ class WidgetGallery(QDialog):
         self.setWindowTitle("Planificar")
         #self.changeStyle('Windows')
 
-       
     '''
     def changeStyle(self, styleName):
         QApplication.setStyle(QStyleFactory.create(styleName))
@@ -1314,13 +1315,13 @@ class WidgetGallery(QDialog):
         tab1hbox.addWidget(localidadCombo)
         
         numDiasEdit = QLineEdit(self)
-        numDiasLabel = QLabel("&Número de días:", self)
+        numDiasLabel = QLabel("&Numero de dias:", self)
         numDiasLabel.setBuddy(numDiasEdit)
         tab1hbox.addWidget(numDiasLabel)
         tab1hbox.addWidget(numDiasEdit)
 
         capacidadContenedorEdit = QLineEdit(self)
-        capacidadContenedorLabel = QLabel("Capacidad máxima de los contenedores:", self)
+        capacidadContenedorLabel = QLabel("Capacidad maxima de los contenedores:", self)
         capacidadContenedorLabel.setBuddy(capacidadContenedorEdit)
         tab1hbox.addWidget(capacidadContenedorLabel)
         tab1hbox.addWidget(capacidadContenedorEdit)
@@ -1346,7 +1347,7 @@ class WidgetGallery(QDialog):
         camionesTableWidget=QTableWidget()
         camionesTableWidget.setColumnCount(len(headers))
         camionesTableWidget.setRowCount(len(datos)+1)
-
+        
         j = 0
         for h in headers: 
             camionesTableWidget.setHorizontalHeaderItem(j,QTableWidgetItem(h))
@@ -1356,12 +1357,13 @@ class WidgetGallery(QDialog):
         while i < len(datos): 
             cont = 0
             while cont < len(datos[0]): 
-                #no pilla el último
                 camionesTableWidget.setItem(i,cont,QTableWidgetItem(str(datos[i][cont])))
-                #Set icon (para la última columna ?)
                 cont += 1
 
             i += 1 
+
+
+
 
         def guardarCamiones(self):
         
@@ -1371,14 +1373,14 @@ class WidgetGallery(QDialog):
                 for x in range(camionesTableWidget.rowCount()):
                     try:
                         text = str(camionesTableWidget.item(row, col).text())
-                        datos[x][i] = text
+                        datos[x][i] = int(text)
                         row += 1
                     except AttributeError:
                         row += 1
                 row = 0
                 col += 1
 
-            with open("Camiones.csv", "w", newline='') as f:
+            with open("Data/Camiones.csv", "w", newline='') as f:
                 writer = csv.writer(f, delimiter=',')
                 writer.writerow(headers) # write the header
                 # write the actual content line by line
@@ -1433,14 +1435,14 @@ class WidgetGallery(QDialog):
                 for x in range(contenedoresTableWidget.rowCount()):
                     try:
                         text = str(contenedoresTableWidget.item(row, col).text())
-                        datos[x][i] = text
+                        datosContenedores[x][i] = (text)
                         row += 1
                     except AttributeError:
                         row += 1
                 row = 0
                 col += 1
 
-            with open("Contenedores.csv", "w", newline='') as f:
+            with open("Data/Contenedores.csv", "w", newline='') as f:
                 writer = csv.writer(f, delimiter=',')
                 writer.writerow(headers) # write the header
                 # write the actual content line by line
@@ -1462,19 +1464,40 @@ class WidgetGallery(QDialog):
         #https://stackoverflow.com/questions/60246282/read-a-html-file-and-display-it-in-tkinter-window
         #https://stackoverflow.com/questions/52656526/how-to-insert-a-web-browser-in-python-qt-designer
         tab4 = QWidget()
-        browser = QWebEngineView()
+        #browser = QWebEngineView()
         #browser.load(QUrl('file://' + os.path.realpath("ABADINO - dia 1.html")))
-        #browser.load(QUrl.fromLocalFile('file://' + os.path.realpath("ABADINO - dia 1.html")))
+        #browser.load(QUrl.fromLocalFile('file://' + os.path.realpath("mapa1.html")))
         #browser.load(QUrl('https://www.learnpyqt.com'))#Esto funciona en Windows, pero las dos anteriores no...
 
-        file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "ABADINO - dia 1.html"))
-        local_url = QUrl.fromLocalFile(file_path)
-        browser.load(local_url)
 
+        tabMapas = QTabWidget()
+
+        numDias = 3 #TODO
+        i = 0
+        while i < numDias:
+          file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "mapa{0}.html".format(i+1)))
+          #file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "mapa1.html"))
+          local_url = QUrl.fromLocalFile(file_path)
+          browser = QWebEngineView()
+          browser.load(local_url)
+
+          tabMapa = QWidget()
+          tabMapabox = QHBoxLayout()
+          tabMapabox.setContentsMargins(5, 5, 5, 5)
+          tabMapabox.addWidget(browser)
+          tabMapa.setLayout(tabMapabox)
+          tabMapas.addTab(tabMapa, "Dia {}".format(i+1))
+
+          i+=1
+ 
+        #tab4hbox = QHBoxLayout()
         tab4hbox = QHBoxLayout()
         tab4hbox.setContentsMargins(5, 5, 5, 5)
-        tab4hbox.addWidget(browser)
-        
+        tab4hbox.addWidget(tabMapas)
+        tab4.setLayout(tab4hbox)
+
+
+        #tab4hbox.addWidget(browser)
         #browser.show() #Si descomentamos esto se abre y se cierra una ventana antes de que salga la ventana de la aplicación.
 
         
@@ -1486,12 +1509,10 @@ class WidgetGallery(QDialog):
         tab5hbox.setContentsMargins(5, 5, 5, 5)
         text_edit = QPlainTextEdit()
 
-        text=open('Data/sample.txt').read()
+        text = open('Data/sample.txt').read()
         text_edit.setReadOnly(True)
         text_edit.appendPlainText(text)
         tab5hbox.addWidget(text_edit)
-        
-        
         tab5.setLayout(tab5hbox)
 
         self.bottomLeftTabWidget.addTab(tab1, "&General")
@@ -1546,7 +1567,6 @@ class WidgetGallery(QDialog):
         #capacidadCamiones = 700
       
 
-      
         capacidadCamiones = fromCharToInt(procesaVector(capacidadCamiones,separadorV))
         data = create_data_model2(localidad, capacidadCamiones, nCamiones, depot, capacidadContenedor)
         
@@ -1588,36 +1608,42 @@ class WidgetGallery(QDialog):
         print("######################\n")
 
 
-        print("SOLUCIÓN")
+        #print("SOLUCIÓN")
 
         coste, resultado, demandas = funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal, localidad)
+        lat, longi, depot = getCoordenadas(data)
+
+        '''
         print("\n\nCÓDIGO DE COLORES")
         print("- - - - - - - - - -")
         print("Azul - correctas")
         print("Amarillo - límite")
         print("Rojo - desbordadas")
-
-        #print("resultado: ", resultado)
-
+        '''
+        
         d = 0
-        try:
-            while d < numDias:  
-                listaR = []
-                ncam = 0
+        #try:
+        while d < numDias:  
+            listaR = []
+            ncam = 0
 
-                while ncam < nCamiones: 
-                # sale index out of range
+            while ncam < nCamiones: 
+            # sale index out of range
+        
+              listaR.append(resultado[d]['listaRutas'][ncam])
+              #representarContenedores(listaR, data, localidad)
+              ncam +=1
             
-                    listaR.append(resultado[d]['listaRutas'][ncam])
-                    #representarContenedores(listaR, data, localidad)
-                    ncam +=1
-                #saa las rutas simples del principio 
-                #representarContenedores(listaR,data,localidad, d, resultado, demandas)
-                #print("PUEDE QUE NO SE ESTÉN REPRESENTANDO LAS DEMANDAS CORRECTAMENTE EN EL GRÁFICO.")
-                d += 1
+            print(listaR)
+            mapas = get_map(lat, longi, depot, listaR)
+            
+            for mapa in mapas:
+              mapa.save("mapa"+str(d+1)+".html")
+            
+            d += 1
 
-        except:
-            print("Las rutas del día {} hace que se desborden contenedores. Se ha dejado de planificar.".format(d+1))
+        #except:
+            #print("Las rutas del día {} hace que se desborden contenedores. Se ha dejado de planificar.".format(d+1))
 
         print("\nCostes: ", coste)      
 
@@ -1633,7 +1659,6 @@ if __name__ == '__main__':
     gallery = WidgetGallery()
     
     gallery.show()
-
 
     
     sys.exit(app.exec_()) 
