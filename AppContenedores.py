@@ -1475,7 +1475,7 @@ class WidgetGallery(QDialog):
         numDias = 3 #TODO
         i = 0
         while i < numDias:
-          file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "mapa{0}.html".format(i+1)))
+          file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "Resultados/mapa{0}.html".format(i+1)))
           #file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "mapa1.html"))
           local_url = QUrl.fromLocalFile(file_path)
           browser = QWebEngineView()
@@ -1638,7 +1638,7 @@ class WidgetGallery(QDialog):
             mapas = get_map(lat, longi, depot, listaR)
             
             for mapa in mapas:
-              mapa.save("mapa"+str(d+1)+".html")
+              mapa.save("Resultados/mapa"+str(d+1)+".html")
             
             d += 1
 
