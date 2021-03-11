@@ -44,7 +44,7 @@ from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QDateTimeEdit,
         QDial, QDialog, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit,
         QProgressBar, QPushButton, QRadioButton, QScrollBar, QSizePolicy,
         QSlider, QSpinBox, QStyleFactory, QTableWidget, QTabWidget, QTextEdit,
-        QVBoxLayout, QWidget, QTableWidgetItem, QFormLayout, QPlainTextEdit)
+        QVBoxLayout, QWidget, QTableWidgetItem, QFormLayout, QPlainTextEdit, QAbstractScrollArea)
 import time
 from datetime import datetime
 #https://github.com/pyqt/examples/tree/_/src/02%20PyQt%20Widgets
@@ -1246,8 +1246,8 @@ class WidgetGallery(QDialog):
     def __init__(self, parent=None):
         super(WidgetGallery, self).__init__(parent)
         
-        self._dataCamiones = datos
-        self._dataContenedores = datosContenedores
+        #self._dataCamiones = datos
+        #self._dataContenedores = datosContenedores
         self.setFixedWidth(700)
         self.setFixedHeight(600)
   
@@ -1340,13 +1340,13 @@ class WidgetGallery(QDialog):
         tab2 = QWidget()
         camionesTableWidget = QTableWidget(10, 10)
 
-        tab2hbox = QHBoxLayout()
+        tab2hbox = QGridLayout()
         tab2hbox.setContentsMargins(10, 10, 10, 10)
     
         camionesTableWidget=QTableWidget()
         camionesTableWidget.setColumnCount(len(headers))
-        camionesTableWidget.setRowCount(len(datos)+1)
-
+        camionesTableWidget.setRowCount(len(datos))
+        camionesTableWidget.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
         j = 0
         for h in headers: 
             camionesTableWidget.setHorizontalHeaderItem(j,QTableWidgetItem(h))
@@ -1357,6 +1357,7 @@ class WidgetGallery(QDialog):
             cont = 0
             while cont < len(datos[0]): 
                 #no pilla el último
+
                 camionesTableWidget.setItem(i,cont,QTableWidgetItem(str(datos[i][cont])))
                 #Set icon (para la última columna ?)
                 cont += 1
@@ -1364,16 +1365,20 @@ class WidgetGallery(QDialog):
             i += 1 
 
         def guardarCamiones(self):
-
-
-
+            r = camionesTableWidget.rowCount()
+            c = camionesTableWidget.columnCount()
+            print(r)
+            print(c)
+            Matrix = [[0 for x in range(c)] for y in range(r)]    
+            print(Matrix)
             row = 0
             col = 0
             for i in range(camionesTableWidget.columnCount()):
                 for x in range(camionesTableWidget.rowCount()):
                     try:
                         text = str(camionesTableWidget.item(row, col).text())
-                        datos[x][i] = int(text)
+                        Matrix[x][i] = int(text)
+                        #datos[x][i] = int(text)
                         
                         row += 1
                     except AttributeError:
@@ -1381,6 +1386,7 @@ class WidgetGallery(QDialog):
                 row = 0
                 col += 1
             print("Datos Camiones")
+            datos = Matrix
             print(datos)
             with open("Data/Camiones.csv", "w", newline='') as f:
                 writer = csv.writer(f, delimiter=',')
@@ -1389,11 +1395,25 @@ class WidgetGallery(QDialog):
                 for d in datos:
                     writer.writerow(d)
 
-        tab2hbox.addWidget(camionesTableWidget)
+        def añadirCamiones(self): 
+          rowPosition = camionesTableWidget.rowCount()
+          camionesTableWidget.insertRow(rowPosition)
+
+        añadirCamionesB= QPushButton(self)
+        añadirCamionesB.setText("Añadir fila")
+        tab2hbox.addWidget(añadirCamionesB)
+        añadirCamionesB.clicked.connect(añadirCamiones,0,2)
+
+        tab2hbox.addWidget(camionesTableWidget,1,0)
+
         guardarCamionesB= QPushButton(self)
         guardarCamionesB.setText("Guardar")
-        tab2hbox.addWidget(guardarCamionesB)
+        tab2hbox.addWidget(guardarCamionesB,2,2)
         guardarCamionesB.clicked.connect(guardarCamiones)
+
+
+
+
         tab2.setLayout(tab2hbox)
 
    
