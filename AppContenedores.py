@@ -790,6 +790,7 @@ def get_route(ruta, lat, longi):
 
   url = 'http://router.project-osrm.org/route/v1/driving/'+strRuta+'?annotations=distance,duration'
 
+
   r = requests.get(url)
   res = r.json()
 
@@ -809,7 +810,8 @@ def get_route(ruta, lat, longi):
 
 def get_map(lat, longi, depot, rutas):
   mapas = []
-
+  colores = ('red', 'green', 'blue', 'yellow', 'deeppink', 'darkmagenta', 'orange', 'mediumspringgreen',
+    'darkturquoise', "teal", "navy")
   m = folium.Map(location=depot,
               zoom_start=13)
 
@@ -823,7 +825,7 @@ def get_map(lat, longi, depot, rutas):
       folium.PolyLine(
           out['route'],
           weight=8,
-          color=random.choice(('blue', 'red', 'green', 'yellow', 'black', 'purple', 'orange', 'brown', 'gray')),
+          color=colores[n],
           opacity=0.8
       ).add_to(feature_group)
 
@@ -1461,14 +1463,7 @@ class WidgetGallery(QDialog):
         '''
         TAB 4 - MUESTRA RUTAS 
         '''
-        #https://stackoverflow.com/questions/60246282/read-a-html-file-and-display-it-in-tkinter-window
-        #https://stackoverflow.com/questions/52656526/how-to-insert-a-web-browser-in-python-qt-designer
         tab4 = QWidget()
-        #browser = QWebEngineView()
-        #browser.load(QUrl('file://' + os.path.realpath("ABADINO - dia 1.html")))
-        #browser.load(QUrl.fromLocalFile('file://' + os.path.realpath("mapa1.html")))
-        #browser.load(QUrl('https://www.learnpyqt.com'))#Esto funciona en Windows, pero las dos anteriores no...
-
 
         tabMapas = QTabWidget()
 
@@ -1476,7 +1471,6 @@ class WidgetGallery(QDialog):
         i = 0
         while i < numDias:
           file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "Resultados/mapa{0}.html".format(i+1)))
-          #file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "mapa1.html"))
           local_url = QUrl.fromLocalFile(file_path)
           browser = QWebEngineView()
           browser.load(local_url)
