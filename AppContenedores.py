@@ -1347,7 +1347,7 @@ class WidgetGallery(QDialog):
         camionesTableWidget=QTableWidget()
         camionesTableWidget.setColumnCount(len(headers))
         camionesTableWidget.setRowCount(len(datos)+1)
-
+        
         j = 0
         for h in headers: 
             camionesTableWidget.setHorizontalHeaderItem(j,QTableWidgetItem(h))
@@ -1357,12 +1357,13 @@ class WidgetGallery(QDialog):
         while i < len(datos): 
             cont = 0
             while cont < len(datos[0]): 
-                #no pilla el último
                 camionesTableWidget.setItem(i,cont,QTableWidgetItem(str(datos[i][cont])))
-                #Set icon (para la última columna ?)
                 cont += 1
 
             i += 1 
+
+
+
 
         def guardarCamiones(self):
         
@@ -1607,18 +1608,19 @@ class WidgetGallery(QDialog):
         print("######################\n")
 
 
-        print("SOLUCIÓN")
+        #print("SOLUCIÓN")
 
         coste, resultado, demandas = funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal, localidad)
         lat, longi, depot = getCoordenadas(data)
 
+        '''
         print("\n\nCÓDIGO DE COLORES")
         print("- - - - - - - - - -")
         print("Azul - correctas")
         print("Amarillo - límite")
         print("Rojo - desbordadas")
-
-
+        '''
+        
         d = 0
         #try:
         while d < numDias:  
@@ -1657,14 +1659,7 @@ if __name__ == '__main__':
     gallery = WidgetGallery()
     
     gallery.show()
-    '''
-    #---------------add this--------------------
-    gallery.__timer = QTimer()
-    gallery.__timer.timeout.connect(gallery.ontimeout)
-    gallery.__timer.start(1000)
-    #-------------------------------------------
-    '''
-    gallery.show()
+
     
     sys.exit(app.exec_()) 
 
