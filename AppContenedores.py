@@ -46,6 +46,7 @@ from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QDateTimeEdit,
         QSlider, QSpinBox, QStyleFactory, QTableWidget, QTabWidget, QTextEdit,
         QVBoxLayout, QWidget, QTableWidgetItem, QFormLayout, QPlainTextEdit)
 import time
+import threading
 from datetime import datetime
 #https://github.com/pyqt/examples/tree/_/src/02%20PyQt%20Widgets
 #https://stackoverflow.com/questions/52010524/widgets-placement-in-tabs
@@ -825,7 +826,7 @@ def get_map(lat, longi, depot, rutas):
       folium.PolyLine(
           out['route'],
           weight=8,
-          color=colores[n],
+          color=colores[n-1],
           opacity=0.8
       ).add_to(feature_group)
 
@@ -1252,6 +1253,8 @@ class WidgetGallery(QDialog):
         
         self._dataCamiones = datos
         self._dataContenedores = datosContenedores
+        self._planThread = threading.Thread(target=self.planificar)
+        self._planThread.daemon = True
         self.setFixedWidth(700)
         self.setFixedHeight(600)
   
@@ -1273,7 +1276,7 @@ class WidgetGallery(QDialog):
         planificarRutas.setText("&Planificar")
         lowerLayout.addWidget(planificarRutas)
 
-        planificarRutas.clicked.connect(self.planificar)
+        planificarRutas.clicked.connect(self.threadPlanificar)
 
         #self.connect(self.planificarB, SIGNAL("clicked()"),self.button_click)
     
@@ -1539,7 +1542,6 @@ class WidgetGallery(QDialog):
         self.bottomLeftTabWidget.addTab(tab5, "&Resultados")
 
 
-
     def guardarDatos(self,obj):
         # shost is a QString object
         
@@ -1664,6 +1666,11 @@ class WidgetGallery(QDialog):
 
         print("\nCostes: ", coste)      
 
+    def threadPlanificar(self):
+      self._planThread.start()
+
+    def closeEvent(self, event):
+      event.accept()
 
 
 if __name__ == '__main__':
