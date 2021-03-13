@@ -1405,16 +1405,27 @@ class WidgetGallery(QDialog):
           rowPosition = camionesTableWidget.rowCount()
           camionesTableWidget.insertRow(rowPosition)
 
+        def borrarFila(self):
+          camionesTableWidget.removeRow(camionesTableWidget.currentRow())
+
+
+
         añadirCamionesB= QPushButton(self)
         añadirCamionesB.setText("Añadir fila")
-        tab2hbox.addWidget(añadirCamionesB)
-        añadirCamionesB.clicked.connect(añadirCamiones,0,2)
+        tab2hbox.addWidget(añadirCamionesB,0,1)
+        añadirCamionesB.clicked.connect(añadirCamiones)
 
-        tab2hbox.addWidget(camionesTableWidget,1,0)
+
+        borrarFilaB= QPushButton(self)
+        borrarFilaB.setText("Eliminar fila")
+        tab2hbox.addWidget(borrarFilaB,1,1)
+        borrarFilaB.clicked.connect(borrarFila)
+
+        tab2hbox.addWidget(camionesTableWidget,2,0)
 
         guardarCamionesB= QPushButton(self)
         guardarCamionesB.setText("Guardar")
-        tab2hbox.addWidget(guardarCamionesB,2,1)
+        tab2hbox.addWidget(guardarCamionesB,3,0)
         guardarCamionesB.clicked.connect(guardarCamiones)
 
 
@@ -1653,7 +1664,7 @@ class WidgetGallery(QDialog):
             #representarContenedores(listaR, data, localidad)
             ncam +=1
           
-          print(listaR)
+          #print(listaR)
           mapas = get_map(lat, longi, depot, listaR)
           
           for mapa in mapas:
