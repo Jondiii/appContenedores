@@ -1251,7 +1251,7 @@ class WidgetGallery(QDialog):
     def __init__(self, parent=None):
         super(WidgetGallery, self).__init__(parent)
         
-        self._dataCamiones = datos
+        self._dataCamiones = datos#Esto no se llega a usar, creo
         self._dataContenedores = datosContenedores
         self._planThread = threading.Thread(target=self.planificar)
         self._planThread.daemon = True
@@ -1262,7 +1262,6 @@ class WidgetGallery(QDialog):
         
         topLayout = QHBoxLayout()
         topLayout.addStretch(1)
-   
 
         mainLayout = QVBoxLayout()
         mainLayout.addLayout(topLayout)
@@ -1316,7 +1315,7 @@ class WidgetGallery(QDialog):
         localidadLabel.setBuddy(localidadCombo)
         tab1hbox.addWidget(localidadLabel)
         #tab1hbox.addWidget(localidadEdit)
-        localidadCombo.setStyleSheet("QComboBox { combobox-popup: 0; }");
+        localidadCombo.setStyleSheet("QComboBox { combobox-popup: 0; }")
         tab1hbox.addWidget(localidadCombo)
         
         numDiasEdit = QLineEdit(self)
@@ -1541,7 +1540,6 @@ class WidgetGallery(QDialog):
         self.bottomLeftTabWidget.addTab(tab4, "&Plan")
         self.bottomLeftTabWidget.addTab(tab5, "&Resultados")
 
-
     def guardarDatos(self,obj):
         # shost is a QString object
         
@@ -1550,124 +1548,131 @@ class WidgetGallery(QDialog):
         datosPlanificar['capacidadContenedor'] = obj[2].text()
 
     def planificar(self): 
+      for dc in datosContenedores: 
+          datosPlanificar['estadoInicial'].append(dc[1])
+          datosPlanificar['aumentoDiario'].append(dc[2])
 
-        for dc in datosContenedores: 
-            datosPlanificar['estadoInicial'].append(dc[1])
-            datosPlanificar['aumentoDiario'].append(dc[2])
+      datos = self.leerCSV('Camiones.csv', headers)
+      print('datos en planificar:', datos)
 
-        for c in datos: 
-            if c[3] == 1: 
-                datosPlanificar['numCamiones']  += 1
-                datosPlanificar['capacidadCamiones'].append(c[1])
-                datosPlanificar['velocidadCamiones'].append(c[2])
+      for c in datos: 
+          if c[3] == 1: 
+              datosPlanificar['numCamiones']  += 1
+              datosPlanificar['capacidadCamiones'].append(c[1])
+              datosPlanificar['velocidadCamiones'].append(c[2])
 
 
-        ''' 
-        VARIABLES 
-        '''
-        localidad = datosPlanificar['Localidad']
-        capacidadCamiones = datosPlanificar['capacidadCamiones']
-        nCamiones = int(datosPlanificar['numCamiones'])
-        depot = 0
-        numDias = int(datosPlanificar['numDias'])
-        llenadoInicial = datosPlanificar['estadoInicial']
-        aumentoDiario = datosPlanificar['aumentoDiario']
-        separadorV = ","
-        capacidadContenedor = int(datosPlanificar['capacidadContenedor'])
+      ''' 
+      VARIABLES 
+      '''
+      localidad = datosPlanificar['Localidad']
+      capacidadCamiones = datosPlanificar['capacidadCamiones']
+      nCamiones = int(datosPlanificar['numCamiones'])
+      depot = 0
+      numDias = int(datosPlanificar['numDias'])
+      llenadoInicial = datosPlanificar['estadoInicial']
+      aumentoDiario = datosPlanificar['aumentoDiario']
+      separadorV = ","
+      capacidadContenedor = int(datosPlanificar['capacidadContenedor'])
 
-        print(localidad)
+      print(localidad)
 
-        """### Main
+      """### Main
 
-        Comentario: Introduciendo los parametros de esta forma no tenemos la opción de variar el estado inical o el aumento de cada contenedor de forma individual. Revisar.
-        """
-        #localidad = 'ABADINO'
-        #nCamiones = 5
-        #capacidadCamiones = 700
+      Comentario: Introduciendo los parametros de esta forma no tenemos la opción de variar el estado inical o el aumento de cada contenedor de forma individual. Revisar.
+      """
+      #localidad = 'ABADINO'
+      #nCamiones = 5
+      #capacidadCamiones = 700
+    
+
+      capacidadCamiones = fromCharToInt(procesaVector(capacidadCamiones,separadorV))
+      data = create_data_model2(localidad, capacidadCamiones, nCamiones, depot, capacidadContenedor)
       
+      ncontenedores = len(data['distance_matrix']) 
 
-        capacidadCamiones = fromCharToInt(procesaVector(capacidadCamiones,separadorV))
-        data = create_data_model2(localidad, capacidadCamiones, nCamiones, depot, capacidadContenedor)
-        
-        ncontenedores = len(data['distance_matrix']) 
+      i = 0 
+      capacidadTotal = 0
+      while i < nCamiones:      
+          capacidadTotal += capacidadCamiones[i]
+          i += 1 
 
-        i = 0 
-        capacidadTotal = 0
-        while i < nCamiones:      
-            capacidadTotal += capacidadCamiones[i]
-            i += 1 
+      #numDias = 3 # valor máximo del plan
 
-        #numDias = 3 # valor máximo del plan
+      nCont = len(data['datos'])
+      #estadoContenedores, aumentoDiario = init(nCont)
+      estadoContenedores = pd.DataFrame(fromCharToInt(procesaVector(llenadoInicial, separadorV)))
+      aumentoDiario = pd.DataFrame(fromCharToInt(procesaVector(aumentoDiario, separadorV)))
+      plan = randomPlan(nCont, numDias)
 
-        nCont = len(data['datos'])
-        #estadoContenedores, aumentoDiario = init(nCont)
-        estadoContenedores = pd.DataFrame(fromCharToInt(procesaVector(llenadoInicial, separadorV)))
-        aumentoDiario = pd.DataFrame(fromCharToInt(procesaVector(aumentoDiario, separadorV)))
-        plan = randomPlan(nCont, numDias)
+      #en algún punto... quitar los 5 minutos en la time-matrix y ponerlos como "de servicio"
 
-        #en algún punto... quitar los 5 minutos en la time-matrix y ponerlos como "de servicio"
+      # costes de este plan 
+      costesIniciales, results = funcionCostes(data, plan, estadoContenedores, aumentoDiario, capacidadTotal)
 
-        # costes de este plan 
-        costesIniciales, results = funcionCostes(data, plan, estadoContenedores, aumentoDiario, capacidadTotal)
+      costeInicial = 0 
+      for c in costesIniciales: 
+          costeInicial += c; 
 
-        costeInicial = 0 
-        for c in costesIniciales: 
-            costeInicial += c; 
+      print("\n######################")
+      print("costeInicial: ", costeInicial)
+      print("planInicial: ", dfToList(plan))
+      print("######################\n")
 
-        print("\n######################")
-        print("costeInicial: ", costeInicial)
-        print("planInicial: ", dfToList(plan))
-        print("######################\n")
-
-        plan, costes = optimizacion(plan, costeInicial, ncontenedores, estadoContenedores, aumentoDiario, data, 5,  capacidadTotal, imprime = True)
-        print("\nDespues de la optimización")
-        print("\n######################")
-        print("plan: ", dfToList(plan))
-        print("costes: ", costes)
-        print("######################\n")
+      plan, costes = optimizacion(plan, costeInicial, ncontenedores, estadoContenedores, aumentoDiario, data, 5,  capacidadTotal, imprime = True)
+      print("\nDespues de la optimización")
+      print("\n######################")
+      print("plan: ", dfToList(plan))
+      print("costes: ", costes)
+      print("######################\n")
 
 
-        #print("SOLUCIÓN")
+      #print("SOLUCIÓN")
 
-        coste, resultado, demandas = funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal, localidad)
-        lat, longi, depot = getCoordenadas(data)
+      coste, resultado, demandas = funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal, localidad)
+      lat, longi, depot = getCoordenadas(data)
 
-        '''
-        print("\n\nCÓDIGO DE COLORES")
-        print("- - - - - - - - - -")
-        print("Azul - correctas")
-        print("Amarillo - límite")
-        print("Rojo - desbordadas")
-        '''
-        
-        d = 0
-        #try:
-        while d < numDias:  
-            listaR = []
-            ncam = 0
+      '''
+      print("\n\nCÓDIGO DE COLORES")
+      print("- - - - - - - - - -")
+      print("Azul - correctas")
+      print("Amarillo - límite")
+      print("Rojo - desbordadas")
+      '''
+      
+      d = 0
+      #try:
+      while d < numDias:  
+          listaR = []
+          ncam = 0
 
-            while ncam < nCamiones: 
-            # sale index out of range
-        
-              listaR.append(resultado[d]['listaRutas'][ncam])
-              #representarContenedores(listaR, data, localidad)
-              ncam +=1
-            
-            print(listaR)
-            mapas = get_map(lat, longi, depot, listaR)
-            
-            for mapa in mapas:
-              mapa.save("Resultados/mapa"+str(d+1)+".html")
-            
-            d += 1
+          while ncam < nCamiones: 
+          # sale index out of range
+      
+            listaR.append(resultado[d]['listaRutas'][ncam])
+            #representarContenedores(listaR, data, localidad)
+            ncam +=1
+          
+          print(listaR)
+          mapas = get_map(lat, longi, depot, listaR)
+          
+          for mapa in mapas:
+            mapa.save("Resultados/mapa"+str(d+1)+".html")
+          
+          d += 1
 
-        #except:
-            #print("Las rutas del día {} hace que se desborden contenedores. Se ha dejado de planificar.".format(d+1))
+      #except:
+          #print("Las rutas del día {} hace que se desborden contenedores. Se ha dejado de planificar.".format(d+1))
 
-        print("\nCostes: ", coste)      
+      print("\nCostes: ", coste)      
 
     def threadPlanificar(self):
       self._planThread.start()
+
+    def leerCSV(self, nombre, headers):
+      data = pd.read_csv('Data/'+nombre, delimiter=',', header=0, names=headers)
+      datos = data.values.tolist()
+      return datos
 
     def closeEvent(self, event):
       event.accept()
