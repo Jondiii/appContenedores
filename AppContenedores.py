@@ -791,7 +791,6 @@ def get_route(ruta, lat, longi):
 
   url = 'http://router.project-osrm.org/route/v1/driving/'+strRuta+'?annotations=distance,duration'
 
-
   r = requests.get(url)
   res = r.json()
 
@@ -809,7 +808,7 @@ def get_route(ruta, lat, longi):
 
   return out
 
-def get_map(lat, longi, depot, rutas):
+def get_map(lat, longi, depot, rutas, tiempos):
   mapas = []
   colores = ('red', 'green', 'blue', 'yellow', 'deeppink', 'darkmagenta', 'orange', 'mediumspringgreen',
     'darkturquoise', "teal", "navy")
@@ -817,7 +816,7 @@ def get_map(lat, longi, depot, rutas):
               zoom_start=13)
 
   n = 0
-  for ruta in rutas:
+  for ruta, horas in zip(rutas, tiempos):#Zip parará cuando uno de los dos termine.
     if len(ruta)>2:
       n += 1
       out = get_route(ruta, lat, longi)
@@ -842,13 +841,13 @@ def get_map(lat, longi, depot, rutas):
 
       locationList = pd.DataFrame(locations)
       locationList = locationList.values.tolist()
-          
+      print(horas)
       i = 0
       for point in out['ruta']:
           i += 1
           folium.Marker(
               locationList[point], tooltip=str(i-1),
-              popup="Hora planificada: X\nParada {0} del camión Y\nContenedor al Z%\nCamión al A%"
+              popup="Hora planificada: {0}\nParada {1} del camión Y\nContenedor al Z%\nCamión al A%".format("TODO", i-1)
           ).add_to(feature_group)
 
       
@@ -1655,17 +1654,17 @@ class WidgetGallery(QDialog):
       #try:
       while d < numDias:  
           listaR = []
+          listaT = []
           ncam = 0
 
           while ncam < nCamiones: 
           # sale index out of range
-      
             listaR.append(resultado[d]['listaRutas'][ncam])
-            #representarContenedores(listaR, data, localidad)
+            listaT.append(resultado[d]['listaTiempos'][ncam])
             ncam +=1
           
           #print(listaR)
-          mapas = get_map(lat, longi, depot, listaR)
+          mapas = get_map(lat, longi, depot, listaR, listaT)
           
           for mapa in mapas:
             mapa.save("Resultados/mapa"+str(d+1)+".html")
