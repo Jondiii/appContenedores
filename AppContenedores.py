@@ -664,7 +664,7 @@ def getRutas(data, manager, routing, solution):
           #Guardamos datos de las rutas
           ruta.append(node_index)
           tiempos.append(route_time)
-          cargas.append(toFloat(route_load))
+          cargas.append(route_load)
 
           #Para la distancia
           previous_index = index
@@ -678,7 +678,7 @@ def getRutas(data, manager, routing, solution):
 
       ruta.append(data['depot'])
       tiempos.append(route_time)
-      cargas.append(toFloat(route_load))
+      cargas.append(route_load)
 
       listaRutas.append(ruta)
       listaTiempos.append(tiempos)
@@ -808,7 +808,7 @@ def get_route(ruta, lat, longi):
 
   return out
 
-def get_map(lat, longi, depot, rutas, tiempos):
+def get_map(lat, longi, depot, capacidadCamiones, rutas, tiempos, llenados):
   mapas = []
   colores = ('red', 'green', 'blue', 'yellow', 'deeppink', 'darkmagenta', 'orange', 'mediumspringgreen',
     'darkturquoise', "teal", "navy")
@@ -816,7 +816,7 @@ def get_map(lat, longi, depot, rutas, tiempos):
               zoom_start=13)
 
   n = 0
-  for ruta, horas in zip(rutas, tiempos):#Zip parará cuando uno de los dos termine.
+  for ruta, horas, llenado, capacidad in zip(rutas, tiempos, llenados, capacidadCamiones):#Zip parará cuando uno de los dos termine.
     if len(ruta)>2:
       n += 1
       out = get_route(ruta, lat, longi)
@@ -841,14 +841,17 @@ def get_map(lat, longi, depot, rutas, tiempos):
 
       locationList = pd.DataFrame(locations)
       locationList = locationList.values.tolist()
-      print(horas)
+
+      print(llenado)
+      print(capacidad)
+
       i = 0
       for point in out['ruta']:
-          i += 1
           folium.Marker(
-              locationList[point], tooltip=str(i-1),
-              popup="Hora planificada: {0}\nParada {1} del camión Y\nContenedor al Z%\nCamión al A%".format("TODO", i-1)
+              locationList[point], tooltip=str(i),
+              popup="Hora planificada: {0}\nParada {1} del camión {2}\nContenedor al Z%\nCamión al {3}%".format(getTime(horas[i]), i, n, llenado[i]/(capacidad/1000))
           ).add_to(feature_group)
+          i += 1
 
       
       feature_group.add_to(m)
@@ -1655,16 +1658,18 @@ class WidgetGallery(QDialog):
       while d < numDias:  
           listaR = []
           listaT = []
+          listaL = []
           ncam = 0
 
           while ncam < nCamiones: 
           # sale index out of range
             listaR.append(resultado[d]['listaRutas'][ncam])
             listaT.append(resultado[d]['listaTiempos'][ncam])
+            listaL.append(resultado[d]['listaCargas'][ncam])#Es el total llenado del camión
             ncam +=1
           
           #print(listaR)
-          mapas = get_map(lat, longi, depot, listaR, listaT)
+          mapas = get_map(lat, longi, depot, capacidadCamiones, listaR, listaT, listaL)
           
           for mapa in mapas:
             mapa.save("Resultados/mapa"+str(d+1)+".html")
