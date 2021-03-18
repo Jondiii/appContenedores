@@ -519,7 +519,7 @@ def randomPlan(nCont, nDias):
   return plan
 
 """Método que recibe data y saca un estado inicial, un aumento diario (ambos semi-aleatorios) y un plan. Habría que reajustarlo en caso de que cada camión tenga distintas capacidades o que se quiera usar un número distinto de camiones cada día."""
-
+## CREO QUE NO SE USA 
 def sacarPlan(data, sizeCont, nDias, capacidadTotal):
 
   estadoI = [0]

@@ -44,8 +44,9 @@ from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QDateTimeEdit,
         QDial, QDialog, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit,
         QProgressBar, QPushButton, QRadioButton, QScrollBar, QSizePolicy,
         QSlider, QSpinBox, QStyleFactory, QTableWidget, QTabWidget, QTextEdit,
-        QVBoxLayout, QWidget, QTableWidgetItem, QFormLayout, QPlainTextEdit, QAbstractScrollArea)
+        QVBoxLayout, QWidget, QTableWidgetItem, QFormLayout, QPlainTextEdit)
 import time
+import threading
 from datetime import datetime
 #https://github.com/pyqt/examples/tree/_/src/02%20PyQt%20Widgets
 #https://stackoverflow.com/questions/52010524/widgets-placement-in-tabs
@@ -203,7 +204,7 @@ def crearMatrizTiempos_Enrique(data):
 
 """#### Métodos intermedios
 
-El siguiente método creará el Routing Model. Para ello, primero se tiene que crear el Index Manager, los cuales se utilizan para señalizar los nodos por los que se estén pasando. Primero se pasa el número de contenedores, luego los vehículos y finalmente el punto de partida.
+El siguiente método creará el Routing Model. Para ello, primero se tiene que crear el Index Manager, los cuales se utilizan para señalizar los nodos por los que se estén pasando. Primero se pasa el n mero de contenedores, luego los vehículos y finalmente el punto de partida.
 
 Una vez tenemos el manager, creamos el modelo, que es quien se encarga de todos los cálculos, para lo que basta con pasarle el manager creado anteriormente.
 
@@ -378,19 +379,20 @@ def getMin(seg):
 
 """Método que recibe los datos y devuelve las latitudes, longitudes y el depot"""
 
-def getCoordenadas(datos):
-    longitud = datos['longitude'].to_numpy()
-    latitud = datos['latitude'].to_numpy()
-    #Transformamos de UTM a Coordenadas Geográficas (Grados)
-    scrProj = pyproj.Proj(proj="utm", zone = 30, ellps="WGS84", units = "m")
-    dstProj = pyproj.Proj(proj = "longlat", ellps="WGS84", datum = "WGS84")
+def getCoordenadas(data):
+  longitud = (data['datos']['longitude'].to_numpy(dtype=float)).copy()
+  latitud = (data['datos']['latitude'].to_numpy(dtype=float)).copy()
+  #Transformamos de UTM a Coordenadas Geográficas (Grados)
+  scrProj = pyproj.Proj(proj="utm", zone = 30, ellps="WGS84", units = "m")
+  dstProj = pyproj.Proj(proj = "longlat", ellps="WGS84", datum = "WGS84")
 
-    i = 0
-    for n in datos['latitude']:
-        longitud[i],latitud[i]=pyproj.transform(scrProj,dstProj, longitud[i],latitud[i])
-        i +=1
+  i = 0
+  for n in data['datos']['latitude']:
+      longitud[i],latitud[i]=pyproj.transform(scrProj,dstProj, longitud[i],latitud[i])
+      i +=1
 
-    return latitud, longitud, [latitud[0], longitud[0]]
+  return latitud, longitud, [latitud[0], longitud[0]]
+
 
 """####Varios
 
@@ -449,11 +451,11 @@ def calculaDemandas(capacidadCont, df, ceros=False):
   return demands
 
 def procesaVector(vector, separadorV):
-    str1 = ','.join(str(e) for e in vector)
-    return str1.split(separadorV)
+  str1 = ','.join(str(e) for e in vector)
+  return str1.split(separadorV)
 
 def fromCharToInt(vector):
-  return [(int(s)) for s in vector]
+  return [int(s) for s in vector]
 
 """####Crear nuevo DataModel
 
@@ -517,7 +519,7 @@ def randomPlan(nCont, nDias):
   return plan
 
 """Método que recibe data y saca un estado inicial, un aumento diario (ambos semi-aleatorios) y un plan. Habría que reajustarlo en caso de que cada camión tenga distintas capacidades o que se quiera usar un número distinto de camiones cada día."""
-
+## CREO QUE NO SE USA 
 def sacarPlan(data, sizeCont, nDias, capacidadTotal):
 
   estadoI = [0]
@@ -662,7 +664,7 @@ def getRutas(data, manager, routing, solution):
           #Guardamos datos de las rutas
           ruta.append(node_index)
           tiempos.append(route_time)
-          cargas.append(toFloat(route_load))
+          cargas.append(route_load)
 
           #Para la distancia
           previous_index = index
@@ -672,11 +674,11 @@ def getRutas(data, manager, routing, solution):
           #Para el timempo
           previous_node_index = node_index
           node_index = manager.IndexToNode(index)
-          route_time += data['time_matrix'][previous_node_index][node_index];
+          route_time += data['time_matrix'][previous_node_index][node_index]
 
       ruta.append(data['depot'])
       tiempos.append(route_time)
-      cargas.append(toFloat(route_load))
+      cargas.append(route_load)
 
       listaRutas.append(ruta)
       listaTiempos.append(tiempos)
@@ -746,7 +748,7 @@ def representarContenedores(listaRutas, data, localidad, dia, resultado, demanda
         i +=1
 
     d = dia + 1
-    title = ("Rutas del día %i" % (d)) 
+    title = ("Rutas del dia %i" % (d)) 
     plt.figure(figsize=(10, 10))
     plt.suptitle(title,  ha='center')
     plt.xlabel("Longitud")
@@ -806,15 +808,16 @@ def get_route(ruta, lat, longi):
 
   return out
 
-def get_map(datos, rutas):
-  lat, longi, depot = getCoordenadas(datos)
+def get_map(lat, longi, depot, capacidadCamiones, rutas, tiempos, llenados):
   mapas = []
-
+  colores = ('red', 'green', 'blue', 'yellow', 'deeppink', 'darkmagenta', 'orange', 'mediumspringgreen',
+    'darkturquoise', "teal", "navy")
   m = folium.Map(location=depot,
               zoom_start=13)
 
   n = 0
-  for ruta in rutas:
+  for ruta, horas, llenado, capacidad in zip(rutas, tiempos, llenados, capacidadCamiones):#Zip parará cuando uno de los dos termine.
+    if len(ruta)>2:
       n += 1
       out = get_route(ruta, lat, longi)
       feature_group = folium.FeatureGroup(name="Ruta "+str(n))
@@ -822,7 +825,7 @@ def get_map(datos, rutas):
       folium.PolyLine(
           out['route'],
           weight=8,
-          color=random.choice(('blue', 'red', 'green', 'yellow', 'black', 'purple', 'orange', 'brown', 'gray')),
+          color=colores[n-1],
           opacity=0.8
       ).add_to(feature_group)
 
@@ -838,13 +841,17 @@ def get_map(datos, rutas):
 
       locationList = pd.DataFrame(locations)
       locationList = locationList.values.tolist()
-          
+
+      print(llenado)
+      print(capacidad)
       i = 0
       for point in out['ruta']:
-          i += 1
           folium.Marker(
-              locationList[point], tooltip=str(i-1)
+              locationList[point], tooltip=str(i),
+
+              popup="Hora planificada: {0}\nParada {1} del camión {2}\nContenedor al Z%\nCamión al {3}%".format(getTime(horas[i]), i, n, llenado[i]/(capacidad/1000))
           ).add_to(feature_group)
+          i += 1
 
       
       feature_group.add_to(m)
@@ -1246,8 +1253,10 @@ class WidgetGallery(QDialog):
     def __init__(self, parent=None):
         super(WidgetGallery, self).__init__(parent)
         
-        #self._dataCamiones = datos
-        #self._dataContenedores = datosContenedores
+        self._dataCamiones = datos#Esto no se llega a usar, creo
+        self._dataContenedores = datosContenedores
+        self._planThread = threading.Thread(target=self.planificar)
+        self._planThread.daemon = True
         self.setFixedWidth(700)
         self.setFixedHeight(600)
   
@@ -1255,7 +1264,6 @@ class WidgetGallery(QDialog):
         
         topLayout = QHBoxLayout()
         topLayout.addStretch(1)
-   
 
         mainLayout = QVBoxLayout()
         mainLayout.addLayout(topLayout)
@@ -1269,7 +1277,7 @@ class WidgetGallery(QDialog):
         planificarRutas.setText("&Planificar")
         lowerLayout.addWidget(planificarRutas)
 
-        planificarRutas.clicked.connect(self.planificar)
+        planificarRutas.clicked.connect(self.threadPlanificar)
 
         #self.connect(self.planificarB, SIGNAL("clicked()"),self.button_click)
     
@@ -1278,7 +1286,6 @@ class WidgetGallery(QDialog):
         self.setWindowTitle("Planificar")
         #self.changeStyle('Windows')
 
-       
     '''
     def changeStyle(self, styleName):
         QApplication.setStyle(QStyleFactory.create(styleName))
@@ -1310,17 +1317,17 @@ class WidgetGallery(QDialog):
         localidadLabel.setBuddy(localidadCombo)
         tab1hbox.addWidget(localidadLabel)
         #tab1hbox.addWidget(localidadEdit)
-        localidadCombo.setStyleSheet("QComboBox { combobox-popup: 0; }");
+        localidadCombo.setStyleSheet("QComboBox { combobox-popup: 0; }")
         tab1hbox.addWidget(localidadCombo)
         
         numDiasEdit = QLineEdit(self)
-        numDiasLabel = QLabel("&Número de días:", self)
+        numDiasLabel = QLabel("&Numero de dias:", self)
         numDiasLabel.setBuddy(numDiasEdit)
         tab1hbox.addWidget(numDiasLabel)
         tab1hbox.addWidget(numDiasEdit)
 
         capacidadContenedorEdit = QLineEdit(self)
-        capacidadContenedorLabel = QLabel("Capacidad máxima de los contenedores:", self)
+        capacidadContenedorLabel = QLabel("Capacidad maxima de los contenedores:", self)
         capacidadContenedorLabel.setBuddy(capacidadContenedorEdit)
         tab1hbox.addWidget(capacidadContenedorLabel)
         tab1hbox.addWidget(capacidadContenedorEdit)
@@ -1337,6 +1344,7 @@ class WidgetGallery(QDialog):
         TAB 2 - TABLA CON INFORMACIÓN DE CAMIONES 
         '''
 
+        
         tab2 = QWidget()
         camionesTableWidget = QTableWidget(10, 10)
 
@@ -1346,7 +1354,7 @@ class WidgetGallery(QDialog):
         camionesTableWidget=QTableWidget()
         camionesTableWidget.setColumnCount(len(headers))
         camionesTableWidget.setRowCount(len(datos))
-        camionesTableWidget.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
+
         j = 0
         for h in headers: 
             camionesTableWidget.setHorizontalHeaderItem(j,QTableWidgetItem(h))
@@ -1399,20 +1407,28 @@ class WidgetGallery(QDialog):
           rowPosition = camionesTableWidget.rowCount()
           camionesTableWidget.insertRow(rowPosition)
 
+        def borrarFila(self):
+          camionesTableWidget.removeRow(camionesTableWidget.currentRow())
+
+
+
         añadirCamionesB= QPushButton(self)
         añadirCamionesB.setText("Añadir fila")
-        tab2hbox.addWidget(añadirCamionesB)
-        añadirCamionesB.clicked.connect(añadirCamiones,0,2)
+        tab2hbox.addWidget(añadirCamionesB,0,1)
+        añadirCamionesB.clicked.connect(añadirCamiones)
 
-        tab2hbox.addWidget(camionesTableWidget,1,0)
+
+        borrarFilaB= QPushButton(self)
+        borrarFilaB.setText("Eliminar fila")
+        tab2hbox.addWidget(borrarFilaB,1,1)
+        borrarFilaB.clicked.connect(borrarFila)
+
+        tab2hbox.addWidget(camionesTableWidget,2,0)
 
         guardarCamionesB= QPushButton(self)
         guardarCamionesB.setText("Guardar")
-        tab2hbox.addWidget(guardarCamionesB,2,2)
+        tab2hbox.addWidget(guardarCamionesB,3,0)
         guardarCamionesB.clicked.connect(guardarCamiones)
-
-
-
 
         tab2.setLayout(tab2hbox)
 
@@ -1430,8 +1446,6 @@ class WidgetGallery(QDialog):
         contenedoresTableWidget=QTableWidget()
         contenedoresTableWidget.setColumnCount(len(headersContenedores))
         contenedoresTableWidget.setRowCount(len(datosContenedores))
-
-
         j = 0
         for h in headersContenedores: 
             contenedoresTableWidget.setHorizontalHeaderItem(j,QTableWidgetItem(h))
@@ -1456,7 +1470,7 @@ class WidgetGallery(QDialog):
                 for x in range(contenedoresTableWidget.rowCount()):
                     try:
                         text = str(contenedoresTableWidget.item(row, col).text())
-                        datosContenedores[x][i] = int(text) 
+                        datosContenedores[x][i] = (text)
                         row += 1
                     except AttributeError:
                         row += 1
@@ -1467,6 +1481,7 @@ class WidgetGallery(QDialog):
                 writer = csv.writer(f, delimiter=',')
                 writer.writerow(headers) # write the header
                 # write the actual content line by line
+
                 for d in datosContenedores:
                     writer.writerow(d)
 
@@ -1481,22 +1496,35 @@ class WidgetGallery(QDialog):
         '''
         TAB 4 - MUESTRA RUTAS 
         '''
-        #https://stackoverflow.com/questions/60246282/read-a-html-file-and-display-it-in-tkinter-window
-        #https://stackoverflow.com/questions/52656526/how-to-insert-a-web-browser-in-python-qt-designer
         tab4 = QWidget()
-        browser = QWebEngineView()
-        #browser.load(QUrl('file://' + os.path.realpath("ABADINO - dia 1.html")))
-        #browser.load(QUrl.fromLocalFile('file://' + os.path.realpath("ABADINO - dia 1.html")))
-        #browser.load(QUrl('https://www.learnpyqt.com'))#Esto funciona en Windows, pero las dos anteriores no...
 
-        file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "ABADINO - dia 1.html"))
-        local_url = QUrl.fromLocalFile(file_path)
-        browser.load(local_url)
+        tabMapas = QTabWidget()
 
+        numDias = 3 #TODO
+        i = 0
+        while i < numDias:
+          file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "Resultados/mapa{0}.html".format(i+1)))
+          local_url = QUrl.fromLocalFile(file_path)
+          browser = QWebEngineView()
+          browser.load(local_url)
+
+          tabMapa = QWidget()
+          tabMapabox = QHBoxLayout()
+          tabMapabox.setContentsMargins(5, 5, 5, 5)
+          tabMapabox.addWidget(browser)
+          tabMapa.setLayout(tabMapabox)
+          tabMapas.addTab(tabMapa, "Dia {}".format(i+1))
+
+          i+=1
+ 
+        #tab4hbox = QHBoxLayout()
         tab4hbox = QHBoxLayout()
         tab4hbox.setContentsMargins(5, 5, 5, 5)
-        tab4hbox.addWidget(browser)
-        
+        tab4hbox.addWidget(tabMapas)
+        tab4.setLayout(tab4hbox)
+
+
+        #tab4hbox.addWidget(browser)
         #browser.show() #Si descomentamos esto se abre y se cierra una ventana antes de que salga la ventana de la aplicación.
 
         
@@ -1520,8 +1548,6 @@ class WidgetGallery(QDialog):
         self.bottomLeftTabWidget.addTab(tab4, "&Plan")
         self.bottomLeftTabWidget.addTab(tab5, "&Resultados")
 
-
-
     def guardarDatos(self,obj):
         # shost is a QString object
         
@@ -1530,117 +1556,143 @@ class WidgetGallery(QDialog):
         datosPlanificar['capacidadContenedor'] = obj[2].text()
 
     def planificar(self): 
-        #Datos Contenedores
-        for dc in datosContenedores: 
-            datosPlanificar['estadoInicial'].append(dc[1])
-            datosPlanificar['aumentoDiario'].append(dc[2])
-        #Datos Camiones 
-        for c in datos: 
-            if c[3] == 1: 
-                datosPlanificar['numCamiones'] += 1
-                datosPlanificar['capacidadCamiones'].append(c[1])
-                datosPlanificar['velocidadCamiones'].append(c[2])
- 
+      for dc in datosContenedores: 
+          datosPlanificar['estadoInicial'].append(dc[1])
+          datosPlanificar['aumentoDiario'].append(dc[2])
 
-        ''' 
-        VARIABLES 
-        '''
-        localidad = datosPlanificar['Localidad']
-        capacidadCamiones = datosPlanificar['capacidadCamiones']
-        nCamiones = int(datosPlanificar['numCamiones'])
-        depot = 0
-        numDias = int(datosPlanificar['numDias'])
-        llenadoInicial = datosPlanificar['estadoInicial']
-        aumentoDiario = datosPlanificar['aumentoDiario']
-        separadorV = ","
-        capacidadContenedor = int(datosPlanificar['capacidadContenedor'])
+      datos = self.leerCSV('Camiones.csv', headers)
+      print('datos en planificar:', datos)
 
-        print(localidad)
+      for c in datos: 
+          if c[3] == 1: 
+              datosPlanificar['numCamiones']  += 1
+              datosPlanificar['capacidadCamiones'].append(c[1])
+              datosPlanificar['velocidadCamiones'].append(c[2])
 
-        """### Main
 
-        Comentario: Introduciendo los parametros de esta forma no tenemos la opción de variar el estado inical o el aumento de cada contenedor de forma individual. Revisar.
-        """
-        #localidad = 'ABADINO'
-        #nCamiones = 5
-        #capacidadCamiones = 700
+      ''' 
+      VARIABLES 
+      '''
+      localidad = datosPlanificar['Localidad']
+      capacidadCamiones = datosPlanificar['capacidadCamiones']
+      nCamiones = int(datosPlanificar['numCamiones'])
+      depot = 0
+      numDias = int(datosPlanificar['numDias'])
+      llenadoInicial = datosPlanificar['estadoInicial']
+      aumentoDiario = datosPlanificar['aumentoDiario']
+      separadorV = ","
+      capacidadContenedor = int(datosPlanificar['capacidadContenedor'])
+
+      print(localidad)
+
+      """### Main
+
+      Comentario: Introduciendo los parametros de esta forma no tenemos la opción de variar el estado inical o el aumento de cada contenedor de forma individual. Revisar.
+      """
+      #localidad = 'ABADINO'
+      #nCamiones = 5
+      #capacidadCamiones = 700
     
-        capacidadCamiones = fromCharToInt(procesaVector(capacidadCamiones,separadorV))
-        data = create_data_model2(localidad, capacidadCamiones, nCamiones, depot, capacidadContenedor)
-        print("capacidadCamiones")
-        print(capacidadCamiones)
-        ncontenedores = len(data['distance_matrix']) 
 
-        i = 0 
-        capacidadTotal = 0
-        while i < nCamiones:      
-            capacidadTotal += capacidadCamiones[i]
-            i += 1 
+      capacidadCamiones = fromCharToInt(procesaVector(capacidadCamiones,separadorV))
+      data = create_data_model2(localidad, capacidadCamiones, nCamiones, depot, capacidadContenedor)
+      
+      ncontenedores = len(data['distance_matrix']) 
 
-        #numDias = 3 # valor máximo del plan
+      i = 0 
+      capacidadTotal = 0
+      while i < nCamiones:      
+          capacidadTotal += capacidadCamiones[i]
+          i += 1 
 
-        nCont = len(data['datos'])
-        #estadoContenedores, aumentoDiario = init(nCont)
-        estadoContenedores = pd.DataFrame(fromCharToInt(procesaVector(llenadoInicial, separadorV)))
-        aumentoDiario = pd.DataFrame(fromCharToInt(procesaVector(aumentoDiario, separadorV)))
-        plan = randomPlan(nCont, numDias)
+      #numDias = 3 # valor máximo del plan
 
-        #en algún punto... quitar los 5 minutos en la time-matrix y ponerlos como "de servicio"
+      nCont = len(data['datos'])
+      #estadoContenedores, aumentoDiario = init(nCont)
+      estadoContenedores = pd.DataFrame(fromCharToInt(procesaVector(llenadoInicial, separadorV)))
+      aumentoDiario = pd.DataFrame(fromCharToInt(procesaVector(aumentoDiario, separadorV)))
+      plan = randomPlan(nCont, numDias)
 
-        # costes de este plan 
-        costesIniciales, results = funcionCostes(data, plan, estadoContenedores, aumentoDiario, capacidadTotal)
+      #en algún punto... quitar los 5 minutos en la time-matrix y ponerlos como "de servicio"
 
-        costeInicial = 0 
-        for c in costesIniciales: 
-            costeInicial += c; 
+      # costes de este plan 
+      costesIniciales, results = funcionCostes(data, plan, estadoContenedores, aumentoDiario, capacidadTotal)
 
-        print("\n######################")
-        print("costeInicial: ", costeInicial)
-        print("planInicial: ", dfToList(plan))
-        print("######################\n")
+      costeInicial = 0 
+      for c in costesIniciales: 
+          costeInicial += c; 
 
-        plan, costes = optimizacion(plan, costeInicial, ncontenedores, estadoContenedores, aumentoDiario, data, 5,  capacidadTotal, imprime = True)
-        print("\nDespues de la optimización")
-        print("\n######################")
-        print("plan: ", dfToList(plan))
-        print("costes: ", costes)
-        print("######################\n")
+      print("\n######################")
+      print("costeInicial: ", costeInicial)
+      print("planInicial: ", dfToList(plan))
+      print("######################\n")
+
+      plan, costes = optimizacion(plan, costeInicial, ncontenedores, estadoContenedores, aumentoDiario, data, 5,  capacidadTotal, imprime = True)
+      print("\nDespues de la optimización")
+      print("\n######################")
+      print("plan: ", dfToList(plan))
+      print("costes: ", costes)
+      print("######################\n")
 
 
-       #print("SOLUCIÓN")
+      #print("SOLUCIÓN")
 
-        coste, resultado, demandas = funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal, localidad)
-        '''
-        print("\n\nCÓDIGO DE COLORES")
-        print("- - - - - - - - - -")
-        print("Azul - correctas")
-        print("Amarillo - límite")
-        print("Rojo - desbordadas")
-        '''
-        #print("resultado: ", resultado)
+      coste, resultado, demandas = funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal, localidad)
+      lat, longi, depot = getCoordenadas(data)
 
-        d = 0
-        try:
-            while d < numDias:  
-                listaR = []
-                ncam = 0
+      '''
+      print("\n\nCÓDIGO DE COLORES")
+      print("- - - - - - - - - -")
+      print("Azul - correctas")
+      print("Amarillo - límite")
+      print("Rojo - desbordadas")
+      '''
+      
+      d = 0
+      #try:
+      while d < numDias:  
+          listaR = []
+          listaT = []
+          listaL = []
+          ncam = 0
 
-                while ncam < nCamiones: 
-                # sale index out of range
-            
-                    listaR.append(resultado[d]['listaRutas'][ncam])
-                    #representarContenedores(listaR, data, localidad)
-                    ncam +=1
-                #saa las rutas simples del principio 
-                #representarContenedores(listaR,data,localidad, d, resultado, demandas)
-                #print("PUEDE QUE NO SE ESTÉN REPRESENTANDO LAS DEMANDAS CORRECTAMENTE EN EL GRÁFICO.")
-                d += 1
+          while ncam < nCamiones: 
+          # sale index out of range
+            listaR.append(resultado[d]['listaRutas'][ncam])
+            listaT.append(resultado[d]['listaTiempos'][ncam])
+            listaL.append(resultado[d]['listaCargas'][ncam])#Es el total llenado del camión
+            ncam +=1
+          
+          #print(listaR)
+          mapas = get_map(lat, longi, depot, capacidadCamiones, listaR, listaT, listaL)
+          
+          for mapa in mapas:
+            mapa.save("Resultados/mapa"+str(d+1)+".html")
+          
+          d += 1
 
-        except:
-            print("Las rutas del día {} hace que se desborden contenedores. Se ha dejado de planificar.".format(d+1))
+      #except:
+          #print("Las rutas del día {} hace que se desborden contenedores. Se ha dejado de planificar.".format(d+1))
 
-        print("\nCostes: ", coste)      
+      print("\nCostes: ", coste)   
 
+      
+      
+    
+    def threadPlanificar(self):
+      self._planThread.start()
+      
+      
+      
+
+
+    def leerCSV(self, nombre, headers):
+      data = pd.read_csv('Data/'+nombre, delimiter=',', header=0, names=headers)
+      datos = data.values.tolist()
+      return datos
+
+    def closeEvent(self, event):
+      event.accept()
 
 
 if __name__ == '__main__':
@@ -1653,6 +1705,7 @@ if __name__ == '__main__':
     gallery = WidgetGallery()
     
     gallery.show()
+
     
     sys.exit(app.exec_()) 
 
