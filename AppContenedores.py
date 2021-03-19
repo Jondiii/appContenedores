@@ -559,7 +559,7 @@ def sacarPlan(data, sizeCont, nDias, capacidadTotal):
           #TODO ¿Qué hacer si el contenedor va a desbordar pero no puede ser recogido este dia?
           pass
 
-      elif (((recogido + n) <= capacidadTotal) & (n > 20) & (plan[cont]==nDias+1)):#Dejamos los que tengan menos de 20% para "rellenar" posibles huecos
+      elif (((recogido + n) <= capacidadTotal) & (n > 40) & (plan[cont]==nDias+1)):#Dejamos los que tengan menos de 20% para "rellenar" posibles huecos
         recogido = recogido + n
         newEstado[0][cont] = 0 #Se ha recogido el contenedor.
         plan[cont] = i
@@ -568,7 +568,7 @@ def sacarPlan(data, sizeCont, nDias, capacidadTotal):
     
     cont = 0
     for n in newEstado[0]:
-      if (((recogido + n) <= capacidadTotal) & (n <= 200) & (n != 0) & (plan[cont]==nDias+1)):
+      if (((recogido + n) <= capacidadTotal) & (n <= 400) & (n != 0) & (plan[cont]==nDias+1)):
         recogido = recogido + n
         newEstado[0][cont] = 0
         plan[cont] = i
