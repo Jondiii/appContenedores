@@ -1,4 +1,12 @@
+<<<<<<< HEAD
 Fecha de creacion: 22/03/2021 16:50:44
+=======
+<<<<<<< HEAD
+Fecha de creacion: 22/03/2021 15:23:53
+=======
+Fecha de creacion: 22/03/2021 16:25:46
+>>>>>>> c711a37b07ab49fd923bc984c9a01f750913c459
+>>>>>>> 4606df976ac227ba6a8b026e09bb5bc5b9522fc3
 
 - - - - - - - - - - - - - - - - - -  
 PLANIFICACION de ZIERBENA 
@@ -7,6 +15,15 @@ PLANIFICACION de ZIERBENA
 DIA: 1
 - - - - - - - 
 #Indice de los contenedores a recoger el dia 1
+<<<<<<< HEAD
+Indices: [0, 4, 5, 8, 9, 12, 14, 18, 25, 28, 29, 30, 33, 37, 39, 40, 42, 43, 46, 50, 52, 57, 58, 62, 63, 64]
+Demanda: [30.0, 30.0, 40.0, 20.0, 20.0, 30.0, 20.0, 10.0, 50.0, 40.0, 20.0, 20.0, 50.0, 20.0, 30.0, 20.0, 10.0, 50.0, 30.0, 10.0, 20.0, 30.0, 40.0, 20.0, 50.0]
+Rutas: 
+[0, 57, 50, 18, 46, 25, 52, 14, 29, 28, 43, 0][0, 42, 40, 64, 39, 5, 37, 9, 8, 30, 4, 58, 63, 33, 12, 62, 0]
+ - Distancia Total: 47512 m
+ - Carga Total: : 2180 toneladas
+ - Distancia Total: 333.0 min
+=======
 Indices: [0, 4, 5, 8, 9, 12, 14]
 Demanda: [30.0, 30.0, 40.0, 20.0, 20.0, 30.0, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan]
 Rutas: 
@@ -14,22 +31,53 @@ Rutas:
  - Distancia Total: 21298 m
  - Carga Total: : 590 toneladas
  - Distancia Total: 122.0 min
+>>>>>>> c711a37b07ab49fd923bc984c9a01f750913c459
 
 DIA: 2
 - - - - - - - 
 #Indice de los contenedores a recoger el dia 2
+<<<<<<< HEAD
 Indices: [0, 1, 6, 11, 13]
 Demanda: [70.0, 40.0, 50.0, 40.0, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan]
+=======
+<<<<<<< HEAD
+Indices: [0, 1, 11, 15, 16, 17, 19, 21, 23, 26, 31, 34, 35, 44, 45, 53, 55, 60, 61, 65, 66, 68, 69]
+Demanda: [70.0, 50.0, 40.0, 20.0, 60.0, 70.0, 40.0, 60.0, 60.0, 40.0, 20.0, 60.0, 60.0, 40.0, 60.0, 70.0, 40.0, 20.0, 50.0, 40.0, 60.0, 40.0]
+Rutas: 
+[0, 15, 17, 16, 53, 45, 19, 26, 61, 35, 23, 69, 60, 55, 44, 21, 66, 68, 65, 11, 31, 1, 34, 0]
+ - Distancia Total: 42323 m
+ - Carga Total: : 1350.0 toneladas
+ - Distancia Total: 283.0 min
+=======
+Indices: [0, 1, 2, 11, 13]
+Demanda: [70.0, 50.0, 50.0, 40.0, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan]
+>>>>>>> 4606df976ac227ba6a8b026e09bb5bc5b9522fc3
 Rutas: 
 [0, 1, 6, 13, 11, 0]
  - Distancia Total: 14232 m
  - Carga Total: : 360.0 toneladas
  - Distancia Total: 93.0 min
+>>>>>>> c711a37b07ab49fd923bc984c9a01f750913c459
 
 DIA: 3
 - - - - - - - 
 #Indice de los contenedores a recoger el dia 3
+<<<<<<< HEAD
 Indices: [0, 2, 3, 7, 10]
+=======
+<<<<<<< HEAD
+Indices: [0, 2, 3, 6, 7, 10, 13, 20, 22, 24, 27, 32, 36, 38, 41, 47, 48, 49, 51, 54, 56, 59, 67]
+Demanda: [60.0, 60.0, 60.0, 30.0, 90.0, 50.0, 60.0, 50.0, 60.0, 80.0, 90.0, 60.0, 60.0, 90.0, 60.0, 60.0, 50.0, 60.0, 80.0, 60.0, 90.0, 50.0]
+Rutas: 
+[0, 13, 47, 51, 49, 56, 27, 7, 48, 59, 54, 3, 6, 22, 41, 24, 36, 2, 10, 32, 67, 38, 20, 0]
+ - Distancia Total: 39755 m
+ - Carga Total: : 1650.0 toneladas
+ - Distancia Total: 271.0 min
+
+Coste: [-475120.0, -423230.0, -397550.0, 10000]
+=======
+Indices: [0, 3, 6, 7, 10]
+>>>>>>> 4606df976ac227ba6a8b026e09bb5bc5b9522fc3
 Demanda: [60.0, 60.0, 30.0, 90.0, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan]
 Rutas: 
 [0, 10, 7, 2, 3, 0]
@@ -37,4 +85,9 @@ Rutas:
  - Carga Total: : 480.0 toneladas
  - Distancia Total: 79.0 min
 
+<<<<<<< HEAD
 Coste: [-212979.99999999997, -142320.0, -100200.0, 10000]
+=======
+Coste: [-212979.99999999997, -145350.0, -97170.0, 10000]
+>>>>>>> c711a37b07ab49fd923bc984c9a01f750913c459
+>>>>>>> 4606df976ac227ba6a8b026e09bb5bc5b9522fc3
