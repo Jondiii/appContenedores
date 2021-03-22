@@ -1,4 +1,4 @@
-Fecha de creacion: 22/03/2021 16:25:46
+Fecha de creacion: 22/03/2021 16:50:44
 
 - - - - - - - - - - - - - - - - - -  
 PLANIFICACION de ZIERBENA 
@@ -18,23 +18,23 @@ Rutas:
 DIA: 2
 - - - - - - - 
 #Indice de los contenedores a recoger el dia 2
-Indices: [0, 1, 2, 11, 13]
-Demanda: [70.0, 50.0, 50.0, 40.0, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan]
+Indices: [0, 1, 6, 11, 13]
+Demanda: [70.0, 40.0, 50.0, 40.0, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan]
 Rutas: 
-[0, 1, 2, 13, 11, 0]
- - Distancia Total: 14535 m
- - Carga Total: : 410.0 toneladas
+[0, 1, 6, 13, 11, 0]
+ - Distancia Total: 14232 m
+ - Carga Total: : 360.0 toneladas
  - Distancia Total: 93.0 min
 
 DIA: 3
 - - - - - - - 
 #Indice de los contenedores a recoger el dia 3
-Indices: [0, 3, 6, 7, 10]
+Indices: [0, 2, 3, 7, 10]
 Demanda: [60.0, 60.0, 30.0, 90.0, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan]
 Rutas: 
-[0, 7, 10, 6, 3, 0]
- - Distancia Total: 9717 m
+[0, 10, 7, 2, 3, 0]
+ - Distancia Total: 10020 m
  - Carga Total: : 480.0 toneladas
- - Distancia Total: 80.0 min
+ - Distancia Total: 79.0 min
 
-Coste: [-212979.99999999997, -145350.0, -97170.0, 10000]
+Coste: [-212979.99999999997, -142320.0, -100200.0, 10000]
