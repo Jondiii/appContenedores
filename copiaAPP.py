@@ -559,7 +559,7 @@ def sacarPlan(data, sizeCont, nDias, capacidadTotal):
           #TODO ¿Qué hacer si el contenedor va a desbordar pero no puede ser recogido este dia?
           pass
 
-      elif (((recogido + n) <= capacidadTotal) & (n > 20) & (plan[cont]==nDias+1)):#Dejamos los que tengan menos de 20% para "rellenar" posibles huecos
+      elif (((recogido + n) <= capacidadTotal) & (n > 40) & (plan[cont]==nDias+1)):#Dejamos los que tengan menos de 20% para "rellenar" posibles huecos
         recogido = recogido + n
         newEstado[0][cont] = 0 #Se ha recogido el contenedor.
         plan[cont] = i
@@ -568,7 +568,7 @@ def sacarPlan(data, sizeCont, nDias, capacidadTotal):
     
     cont = 0
     for n in newEstado[0]:
-      if (((recogido + n) <= capacidadTotal) & (n <= 200) & (n != 0) & (plan[cont]==nDias+1)):
+      if (((recogido + n) <= capacidadTotal) & (n <= 400) & (n != 0) & (plan[cont]==nDias+1)):
         recogido = recogido + n
         newEstado[0][cont] = 0
         plan[cont] = i
@@ -646,6 +646,7 @@ def getRutas(data, manager, routing, solution):
     listaRutas = []
     listaTiempos = []
     listaCargas = []
+    listaLlenadoC = []
     resultado = {}
 
     for vehicle_id in range(data['num_vehicles']):
@@ -656,33 +657,37 @@ def getRutas(data, manager, routing, solution):
       ruta = []
       tiempos = []
       cargas = []
+      llenadoC = []
 
       while not routing.IsEnd(index):
-          node_index = manager.IndexToNode(index)
-          route_load += data['demands'][node_index]
-          
-          #Guardamos datos de las rutas
-          ruta.append(node_index)
-          tiempos.append(route_time)
-          cargas.append(route_load)
+        node_index = manager.IndexToNode(index)
+        route_load += data['demands'][node_index]
+        
+        #Guardamos datos de las rutas
+        ruta.append(node_index)
+        tiempos.append(route_time)
+        cargas.append(route_load)
+        llenadoC.append(data['demands'][node_index])
 
-          #Para la distancia
-          previous_index = index
-          index = solution.Value(routing.NextVar(index))
-          route_distance += routing.GetArcCostForVehicle(previous_index, index, vehicle_id)
-          
-          #Para el timempo
-          previous_node_index = node_index
-          node_index = manager.IndexToNode(index)
-          route_time += data['time_matrix'][previous_node_index][node_index]
+        #Para la distancia
+        previous_index = index
+        index = solution.Value(routing.NextVar(index))
+        route_distance += routing.GetArcCostForVehicle(previous_index, index, vehicle_id)
+        
+        #Para el timempo
+        previous_node_index = node_index
+        node_index = manager.IndexToNode(index)
+        route_time += data['time_matrix'][previous_node_index][node_index]
 
       ruta.append(data['depot'])
       tiempos.append(route_time)
       cargas.append(route_load)
+      llenadoC.append(0)
 
       listaRutas.append(ruta)
       listaTiempos.append(tiempos)
       listaCargas.append(cargas)
+      listaLlenadoC.append(llenadoC)
 
       total_distance += route_distance
       total_load += route_load
@@ -691,6 +696,7 @@ def getRutas(data, manager, routing, solution):
     resultado['listaRutas'] = listaRutas
     resultado['listaTiempos'] = listaTiempos
     resultado['listaCargas'] = listaCargas
+    resultado['listaLlenadoC'] = listaLlenadoC
     resultado['total_distance'] = total_distance
     resultado['total_load'] = total_load
     resultado['total_time'] = total_time
@@ -808,7 +814,7 @@ def get_route(ruta, lat, longi):
 
   return out
 
-def get_map(lat, longi, depot, capacidadCamiones, rutas, tiempos, llenados):
+def get_map(lat, longi, depot, cCamiones, cContenedor, rutas, tiempos, llenados, contenedores):
   mapas = []
   colores = ('red', 'green', 'blue', 'yellow', 'deeppink', 'darkmagenta', 'orange', 'mediumspringgreen',
     'darkturquoise', "teal", "navy")
@@ -816,7 +822,7 @@ def get_map(lat, longi, depot, capacidadCamiones, rutas, tiempos, llenados):
               zoom_start=13)
 
   n = 0
-  for ruta, horas, llenado, capacidad in zip(rutas, tiempos, llenados, capacidadCamiones):#Zip parará cuando uno de los dos termine.
+  for ruta, horas, llenado, capacidad, estadoCont in zip(rutas, tiempos, llenados, cCamiones, contenedores):#Zip parará cuando uno de los dos termine.
     if len(ruta)>2:
       n += 1
       out = get_route(ruta, lat, longi)
@@ -842,14 +848,11 @@ def get_map(lat, longi, depot, capacidadCamiones, rutas, tiempos, llenados):
       locationList = pd.DataFrame(locations)
       locationList = locationList.values.tolist()
 
-      print(llenado)
-      print(capacidad)
       i = 0
       for point in out['ruta']:
           folium.Marker(
               locationList[point], tooltip=str(i),
-
-              popup="Hora planificada: {0}\nParada {1} del camión {2}\nContenedor al Z%\nCamión al {3}%".format(getTime(horas[i]), i, n, llenado[i]/(capacidad/1000))
+              popup="Hora planificada: {0}\nParada {1} del camión {2}\nContenedor al {3}%\nCamión al {4}%".format(getTime(horas[i]), i, n, (estadoCont[i]/cContenedor)*100, (llenado[i]/capacidad)*100)
           ).add_to(feature_group)
           i += 1
 
@@ -1446,6 +1449,8 @@ class WidgetGallery(QDialog):
         contenedoresTableWidget=QTableWidget()
         contenedoresTableWidget.setColumnCount(len(headersContenedores))
         contenedoresTableWidget.setRowCount(len(datosContenedores))
+
+
         j = 0
         for h in headersContenedores: 
             contenedoresTableWidget.setHorizontalHeaderItem(j,QTableWidgetItem(h))
@@ -1491,6 +1496,8 @@ class WidgetGallery(QDialog):
         guardarContenedoresB.setText("Guardar")
         tab3hbox.addWidget(guardarContenedoresB)
         guardarContenedoresB.clicked.connect(guardarContenedores)
+
+
         tab3.setLayout(tab3hbox)
 
         '''
@@ -1540,7 +1547,23 @@ class WidgetGallery(QDialog):
         text_edit.setReadOnly(True)
         text_edit.appendPlainText(text)
         tab5hbox.addWidget(text_edit)
+
+        def refresh(self):
+          tab5hbox.removeWidget(text_edit)
+          text_edit.deleteLater()
+          text_edit2 = QPlainTextEdit()
+          text = open('Data/sample.txt').read()
+          text_edit2.setReadOnly(True)
+          text_edit2.appendPlainText(text)
+          tab5hbox.addWidget(text_edit2)
+          
+
+        refreshB = QPushButton(self)
+        refreshB.setText("Refresh")
+        tab5hbox.addWidget(refreshB)
+        refreshB.clicked.connect(refresh)
         tab5.setLayout(tab5hbox)
+     
 
         self.bottomLeftTabWidget.addTab(tab1, "&General")
         self.bottomLeftTabWidget.addTab(tab2, "&Camiones")
@@ -1568,6 +1591,9 @@ class WidgetGallery(QDialog):
               datosPlanificar['numCamiones']  += 1
               datosPlanificar['capacidadCamiones'].append(c[1])
               datosPlanificar['velocidadCamiones'].append(c[2])
+      
+    
+
 
 
       ''' 
@@ -1654,6 +1680,7 @@ class WidgetGallery(QDialog):
           listaR = []
           listaT = []
           listaL = []
+          listaLC = []
           ncam = 0
 
           while ncam < nCamiones: 
@@ -1661,10 +1688,11 @@ class WidgetGallery(QDialog):
             listaR.append(resultado[d]['listaRutas'][ncam])
             listaT.append(resultado[d]['listaTiempos'][ncam])
             listaL.append(resultado[d]['listaCargas'][ncam])#Es el total llenado del camión
+            listaLC.append(resultado[d]['listaLlenadoC'][ncam])
             ncam +=1
           
           #print(listaR)
-          mapas = get_map(lat, longi, depot, capacidadCamiones, listaR, listaT, listaL)
+          mapas = get_map(lat, longi, depot, capacidadCamiones, capacidadContenedor, listaR, listaT, listaL, listaLC)
           
           for mapa in mapas:
             mapa.save("Resultados/mapa"+str(d+1)+".html")
@@ -1674,17 +1702,10 @@ class WidgetGallery(QDialog):
       #except:
           #print("Las rutas del día {} hace que se desborden contenedores. Se ha dejado de planificar.".format(d+1))
 
-      print("\nCostes: ", coste)   
+      print("\nCostes: ", coste)      
 
-      
-      
-    
     def threadPlanificar(self):
       self._planThread.start()
-      
-      
-      
-
 
     def leerCSV(self, nombre, headers):
       data = pd.read_csv('Data/'+nombre, delimiter=',', header=0, names=headers)
@@ -1693,6 +1714,7 @@ class WidgetGallery(QDialog):
 
     def closeEvent(self, event):
       event.accept()
+
 
 
 if __name__ == '__main__':
