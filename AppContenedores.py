@@ -1595,6 +1595,8 @@ class WidgetGallery(QDialog):
       capacidadContenedor = int(datosPlanificar['capacidadContenedor'])
 
       print(localidad)
+      import time 
+      start_time = time.time()
 
       """### Main
 
@@ -1687,7 +1689,10 @@ class WidgetGallery(QDialog):
       #except:
           #print("Las rutas del día {} hace que se desborden contenedores. Se ha dejado de planificar.".format(d+1))
 
-      print("\nCostes: ", coste)      
+      print("\nCostes: ", coste)  
+
+      
+      print("--- %s seconds ---" % (time.time() - start_time))      
 
     def threadPlanificar(self):
       self._planThread.start()
