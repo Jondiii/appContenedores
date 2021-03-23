@@ -526,7 +526,8 @@ def sacarPlan(data, sizeCont, nDias, capacidadTotal):
   aumentoD = [0]
   print("total truck capacity: ", capacidadTotal)
   plan = [0]
-  
+
+
   i = 0
   rd.seed(1)
   while i < len(data['datos'])-1:
@@ -581,7 +582,7 @@ def sacarPlan(data, sizeCont, nDias, capacidadTotal):
   plan = pd.DataFrame(plan)
   #print("plan: ", dfToList(plan))
 
-  return pd.DataFrame(estadoI), aumentoDF, plan
+  return plan
 
 """###Visualizar resultados
 
@@ -1638,8 +1639,8 @@ class WidgetGallery(QDialog):
       #estadoContenedores, aumentoDiario = init(nCont)
       estadoContenedores = pd.DataFrame(fromCharToInt(procesaVector(llenadoInicial, separadorV)))
       aumentoDiario = pd.DataFrame(fromCharToInt(procesaVector(aumentoDiario, separadorV)))
-      plan = randomPlan(nCont, numDias)
-
+      #plan = randomPlan(nCont, numDias)
+      plan = sacarPlan(data, capacidadContenedor, numDias, capacidadTotal)
       #en algún punto... quitar los 5 minutos en la time-matrix y ponerlos como "de servicio"
 
       # costes de este plan 
