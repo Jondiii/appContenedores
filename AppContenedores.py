@@ -1512,22 +1512,25 @@ class WidgetGallery(QDialog):
         tabMapas = QTabWidget()
 
         numDias = 3 #TODO
+
         i = 0
-        while i < numDias:
-          file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "Resultados/mapa{0}.html".format(i+1)))
-          local_url = QUrl.fromLocalFile(file_path)
-          browser = QWebEngineView()
-          browser.load(local_url)
 
-          tabMapa = QWidget()
-          tabMapabox = QHBoxLayout()
-          tabMapabox.setContentsMargins(5, 5, 5, 5)
-          tabMapabox.addWidget(browser)
-          tabMapa.setLayout(tabMapabox)
-          tabMapas.addTab(tabMapa, "Dia {}".format(i+1))
+        for archivo in os.listdir('Resultados/'):
+          if(archivo.endswith('html')):
+            i += 1
+            print(i)
+            file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "Resultados/mapa{0}.html".format(i)))
+            local_url = QUrl.fromLocalFile(file_path)
+            browser = QWebEngineView()
+            browser.load(local_url)
 
-          i+=1
- 
+            tabMapa = QWidget()
+            tabMapabox = QHBoxLayout()
+            tabMapabox.setContentsMargins(5, 5, 5, 5)
+            tabMapabox.addWidget(browser)
+            tabMapa.setLayout(tabMapabox)
+            tabMapas.addTab(tabMapa, "Dia {}".format(i+1))
+
         #tab4hbox = QHBoxLayout()
         tab4hbox = QHBoxLayout()
         tab4hbox.setContentsMargins(5, 5, 5, 5)
