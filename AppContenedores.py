@@ -1630,9 +1630,9 @@ class WidgetGallery(QDialog):
       #estadoContenedores, aumentoDiario = init(nCont)
       estadoContenedores = pd.DataFrame(fromCharToInt(procesaVector(llenadoInicial, separadorV)))
       aumentoDiario = pd.DataFrame(fromCharToInt(procesaVector(aumentoDiario, separadorV)))
-      #plan = randomPlan(nCont, numDias)
+      plan = randomPlan(nCont, numDias)
 
-      plan = sacarPlan(data, capacidadContenedor, numDias, capacidadTotal, estadoContenedores, aumentoDiario)
+      #plan = sacarPlan(data, capacidadContenedor, numDias, capacidadTotal, estadoContenedores, aumentoDiario)
       #en algún punto... quitar los 5 minutos en la time-matrix y ponerlos como "de servicio"
 
       # costes de este plan 
