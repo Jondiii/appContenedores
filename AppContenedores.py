@@ -1009,8 +1009,6 @@ def funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal,locali
 
     #print("Indice: ", indicesRecoger)
 
-    valorContenedores = demanda
-
     data = newDatamodel(dataOriginal, contenedoresARecoger)
 
     if (demanda[demanda>100].isnull().sum().sum()!=len(demanda)): 
@@ -1098,6 +1096,7 @@ def funcionCostes(data, plan, estadoContenedores, aumentoDiario, capacidadTotal)
 
   i = 0
   numDias = plan.max()[0]
+
   results = []
   costes = []
   dataOriginal = data
@@ -1122,21 +1121,19 @@ def funcionCostes(data, plan, estadoContenedores, aumentoDiario, capacidadTotal)
     demanda = contenedoresARecoger*estadoContenedores
     #print("Cont a recoger: ", dfToList(contenedoresARecoger))
     #print("Demanda: ", dfToList(demanda))
-
+    
     cont = 0
     for i in plan:
       if  i == dia:
         indicesRecoger.append(cont)
       cont += 1
-
-    valorContenedores = demanda
-
+    #print("DIA {0}, cont a recoger {1}".format(dia, len(indicesRecoger)))#ESTA LENGTH DA 0
     data = newDatamodel(dataOriginal, contenedoresARecoger)
 
     if (demanda[demanda>100].isnull().sum().sum()!=len(demanda)): 
       #Salimos del bucle, dejar de planificar el resto de días.
       desborde = list(np.where(demanda>100)[0])
-
+      #print("OJO, DESBORDE")
       for d in desborde:
         costes[dia-1] = costes[dia-1]+dfToList(estadoContenedores)[d]
 
@@ -1150,12 +1147,12 @@ def funcionCostes(data, plan, estadoContenedores, aumentoDiario, capacidadTotal)
       if solucion:
         costes[dia-1] = -10000 + (resultado['total_distance']/1000)  
         # / 1000 para pasar a km 
-
         #estadoContenedores = estadoContenedores * (1-contenedoresARecoger)
         estadoContenedores = estadoContenedores + aumentoDiario
 
         results.append(resultado)
         #print("  Solución encontrada día {0}. Coste: {1}. Resultado: {2}".format(dia, costes[dia-1], resultado))
+
 
       else:  # Si el plan para ese día no es válido, no se puede recoger con los camiones que tenemos
         estadoContenedores = estadoContenedores + aumentoDiario
@@ -1514,14 +1511,11 @@ class WidgetGallery(QDialog):
 
         tabMapas = QTabWidget()
 
-        numDias = 3 #TODO
-
         i = 0
 
         for archivo in os.listdir('Resultados/'):
           if(archivo.endswith('html')):
             i += 1
-            print(i)
             file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "Resultados/mapa{0}.html".format(i)))
             local_url = QUrl.fromLocalFile(file_path)
             browser = QWebEngineView()
@@ -1532,7 +1526,7 @@ class WidgetGallery(QDialog):
             tabMapabox.setContentsMargins(5, 5, 5, 5)
             tabMapabox.addWidget(browser)
             tabMapa.setLayout(tabMapabox)
-            tabMapas.addTab(tabMapa, "Dia {}".format(i+1))
+            tabMapas.addTab(tabMapa, "Dia {}".format(i))
 
         #tab4hbox = QHBoxLayout()
         tab4hbox = QHBoxLayout()
@@ -1667,7 +1661,7 @@ class WidgetGallery(QDialog):
       print("Amarillo - límite")
       print("Rojo - desbordadas")
       '''
-      
+      print("Resultado length: ", len(resultado))
       d = 0
       #try:
       while d < numDias:  
@@ -1676,7 +1670,7 @@ class WidgetGallery(QDialog):
           listaL = []
           listaLC = []
           ncam = 0
-
+          print("d=",d)
           while ncam < nCamiones: 
           # sale index out of range
             listaR.append(resultado[d]['listaRutas'][ncam])
