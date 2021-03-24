@@ -1033,7 +1033,7 @@ def funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal,locali
       #print("Total demandas: ", np.sum(demanda))
       
       if solucion:
-        costes[dia-1] = -10000 * (resultado['total_distance']/1000)  
+        costes[dia-1] = -10000 + (resultado['total_distance']/1000)  
         # / 1000 para pasar a km 
       
         estadoContenedores = estadoContenedores * (1-contenedoresARecoger)
@@ -1148,7 +1148,7 @@ def funcionCostes(data, plan, estadoContenedores, aumentoDiario, capacidadTotal)
       solucion, manager, routing, resultado = solucionaProblema(data)
 
       if solucion:
-        costes[dia-1] = -10000 * (resultado['total_distance']/1000)  
+        costes[dia-1] = -10000 + (resultado['total_distance']/1000)  
         # / 1000 para pasar a km 
 
         #estadoContenedores = estadoContenedores * (1-contenedoresARecoger)

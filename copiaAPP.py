@@ -520,14 +520,17 @@ def randomPlan(nCont, nDias):
 
 """Método que recibe data y saca un estado inicial, un aumento diario (ambos semi-aleatorios) y un plan. Habría que reajustarlo en caso de que cada camión tenga distintas capacidades o que se quiera usar un número distinto de camiones cada día."""
 ## CREO QUE NO SE USA 
-def sacarPlan(data, sizeCont, nDias, capacidadTotal):
+def sacarPlan(data, sizeCont, nDias, capacidadTotal, estadoI, aumentoD):
 
-  estadoI = [0]
-  aumentoD = [0]
+  #estadoI = [0]
+  #aumentoD = [0]
   print("total truck capacity: ", capacidadTotal)
   plan = [0]
-
-
+  estadoI = dfToList(estadoI)
+  aumentoD = dfToList(aumentoD)
+  estadoI.pop(0)
+  aumentoD.pop(0)
+  '''
   i = 0
   rd.seed(1)
   while i < len(data['datos'])-1:
@@ -538,11 +541,13 @@ def sacarPlan(data, sizeCont, nDias, capacidadTotal):
     # Si vamos a trabajar con % de llenado no tiene sentido crear demandas aleatorias.
     plan.append(nDias+1)
     i += 1
-
+  '''
   i = 1
   estadoDF = pd.DataFrame(estadoI)
   data['demands'] = dfToList(estadoDF)
   aumentoDF = pd.DataFrame(aumentoD)
+  print(estadoDF)
+  print(aumentoDF)
 
   while i <= nDias:
     recogido = 0
@@ -555,12 +560,12 @@ def sacarPlan(data, sizeCont, nDias, capacidadTotal):
           recogido = recogido + n
           newEstado[0][cont] = 0 #Se ha recogido el contenedor.
           plan[cont] = i
-
+        
         else:
           #TODO ¿Qué hacer si el contenedor va a desbordar pero no puede ser recogido este dia?
           pass
-
-      elif (((recogido + n) <= capacidadTotal) & (n > 40) & (plan[cont]==nDias+1)):#Dejamos los que tengan menos de 20% para "rellenar" posibles huecos
+      
+      elif(((recogido + n) <= capacidadTotal) & (n > 40) & (plan[cont]==nDias+1)):#Dejamos los que tengan menos de 20% para "rellenar" posibles huecos
         recogido = recogido + n
         newEstado[0][cont] = 0 #Se ha recogido el contenedor.
         plan[cont] = i
@@ -1028,7 +1033,7 @@ def funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal,locali
       #print("Total demandas: ", np.sum(demanda))
       
       if solucion:
-        costes[dia-1] = -10000 * (resultado['total_distance']/1000)  
+        costes[dia-1] = -10000 + (resultado['total_distance']/1000)  
         # / 1000 para pasar a km 
       
         estadoContenedores = estadoContenedores * (1-contenedoresARecoger)
@@ -1143,7 +1148,7 @@ def funcionCostes(data, plan, estadoContenedores, aumentoDiario, capacidadTotal)
       solucion, manager, routing, resultado = solucionaProblema(data)
 
       if solucion:
-        costes[dia-1] = -10000 * (resultado['total_distance']/1000)  
+        costes[dia-1] = -10000 + (resultado['total_distance']/1000)  
         # / 1000 para pasar a km 
 
         #estadoContenedores = estadoContenedores * (1-contenedoresARecoger)
@@ -1640,7 +1645,7 @@ class WidgetGallery(QDialog):
       estadoContenedores = pd.DataFrame(fromCharToInt(procesaVector(llenadoInicial, separadorV)))
       aumentoDiario = pd.DataFrame(fromCharToInt(procesaVector(aumentoDiario, separadorV)))
       #plan = randomPlan(nCont, numDias)
-      plan = sacarPlan(data, capacidadContenedor, numDias, capacidadTotal)
+      plan = sacarPlan(data, capacidadContenedor, numDias, capacidadTotal,estadoContenedores,aumentoDiario )
       #en algún punto... quitar los 5 minutos en la time-matrix y ponerlos como "de servicio"
 
       # costes de este plan 
