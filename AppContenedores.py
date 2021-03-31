@@ -1664,7 +1664,8 @@ class WidgetGallery(QDialog):
       print("Resultado length: ", len(resultado))
       d = 0
       #try:
-      while d < numDias:  
+      #while d < numDias:  
+      while d < len(resultado):
           listaR = []
           listaT = []
           listaL = []
