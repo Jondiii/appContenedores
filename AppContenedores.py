@@ -171,9 +171,154 @@ def create_data_model2(localidad, capacidadCamiones, ncamiones, depot, capacidad
 
     return data
 
-"""#### Métodos matriz de distancias
+"""#### Métodos para generar matriz de distancias
 """
+def matrizDistanciasAPI(datos):
+  #limit = 0
+  coordenadas = ""
 
+  longitud = round(datos['longitude'], 2).to_numpy()
+  latitud = round(datos['latitude'], 2).to_numpy()
+
+  #Transformamos de UTM a Coordenadas Geográficas (Grados)
+  scrProj = pyproj.Proj(proj="utm", zone = 30, ellps="WGS84", units = "m")
+  dstProj = pyproj.Proj(proj = "longlat", ellps="WGS84", datum = "WGS84")
+
+  i = 0
+  for n in datos['latitude']:
+    longitud[i],latitud[i]=pyproj.transform(scrProj,dstProj, longitud[i],latitud[i])
+    i +=1
+
+  for (lat, longi) in zip(latitud, longitud):
+    coordenadas = coordenadas + str(round(longi,6)) + "," + str(round(lat,6)) + ";"
+  
+  #while limit < 100:
+  #      coordenadas = coordenadas + str(round(longitud[limit],6)) + "," + str(round(latitud[limit],6)) + ";"
+  #      limit = limit + 1
+
+  coordenadas = coordenadas[:-1]
+
+  url = 'http://router.project-osrm.org/table/v1/driving/'+coordenadas+'?annotations=duration,distance'
+  
+  response = urllib.request.urlopen(url)
+  result = json.load(response)
+  
+  '''
+  req = urllib.Request(url) 
+  #req.add_header('User-Agent', User_Agent)
+  response = urllib.urlopen(req) 
+ 
+  req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+  response = urllib.request.urlopen(req)
+  print(req)
+  '''
+
+  #matriz = result['rows'][0]['elements'][0]["distance"]["value"] #Con esto sacamos la distancia en metros.
+  matriz = pd.DataFrame(result['distances'])
+
+  return matriz
+
+def matrizDistanciasAPIGrande(datos):
+  t = len(datos)
+  if  t >= 200:
+    raise Exception("La localidad no puede tener 200 o más contenedores.")
+    return 0
+
+  cont = 0
+  coordenadas = ""
+  coordenadas2 = ""
+  arrayCoordenadasFin = []#Aquí se guardarán los strings que se usarán para sacar las distancias de los últimos contenedores
+
+  longitud = round(datos['longitude'], 2).to_numpy()
+  latitud = round(datos['latitude'], 2).to_numpy()
+
+  #Transformamos de UTM a Coordenadas Geográficas (Grados)
+  scrProj = pyproj.Proj(proj="utm", zone = 30, ellps="WGS84", units = "m")
+  dstProj = pyproj.Proj(proj = "longlat", ellps="WGS84", datum = "WGS84")
+
+  i = 0
+  for n in datos['latitude']:
+    longitud[i],latitud[i]=pyproj.transform(scrProj,dstProj, longitud[i],latitud[i])
+    i +=1
+
+  while cont <= 99:
+    if cont == 99:
+      cont2 = 100
+      while cont2 < len(datos):#Guardamos las coordenadas de los 99 primeros con cada uno de los que queden
+        arrayCoordenadasFin.append(coordenadas + str(round(longitud[cont2],6)) + "," + str(round(latitud[cont2],6)))
+        coordenadas2 = coordenadas2 + str(round(longitud[cont2],6)) + "," + str(round(latitud[cont2],6)) + ";"#De paso, guardamos las coordenadas de solo los últimos contenedores
+        cont2 = cont2 + 1
+    
+    coordenadas = coordenadas + str(round(longitud[cont],6)) + "," + str(round(latitud[cont],6)) + ";"
+    cont = cont + 1
+
+  coordenadas = coordenadas[:-1]
+  coordenadas2 = coordenadas2[:-1]
+
+  url = 'http://router.project-osrm.org/table/v1/driving/'+coordenadas+'?annotations=duration,distance'
+  response = urllib.request.urlopen(url)
+  result = json.load(response)
+
+  matriz100 = pd.DataFrame(result['distances'])# Matriz de los 100 primeros contenedores
+
+  url = 'http://router.project-osrm.org/table/v1/driving/'+coordenadas2+'?annotations=duration,distance'
+  response = urllib.request.urlopen(url)
+  result = json.load(response)
+
+  matrizFin = pd.DataFrame(result['distances'])# Matriz de los últimos contenedores
+
+  matrizIntermedia = pd.DataFrame(np.zeros((1, 99)))
+  matrizIntermedia = matrizIntermedia[:][1]
+
+  for string in arrayCoordenadasFin:
+    url = 'http://router.project-osrm.org/table/v1/driving/'+string+'?annotations=duration,distance'
+    response = urllib.request.urlopen(url)
+    result = json.load(response)
+
+    matrizTemp = pd.DataFrame(result['distances'])
+    matrizIntermedia = pd.concat([matrizIntermedia, matrizTemp[:][-1:]], ignore_index=True)
+
+  matrizIntermedia = matrizIntermedia[:][1:]#Cogemos todas las filas menos la primera (que tiene todo 0)
+  matrizIntermedia = matrizIntermedia.reset_index(drop = True)
+
+  contenedor100 = str(round(longitud[100],6)) + "," + str(round(latitud[100],6)) + ";" + coordenadas2
+  url = 'http://router.project-osrm.org/table/v1/driving/'+contenedor100+'?annotations=duration,distance'
+  response = urllib.request.urlopen(url)
+  result = json.load(response)
+
+  distanciasContenedor100 = pd.DataFrame(result['distances'])[:][0]#Contenedor 100 con el resto de los que sobran, solo teníamos del 0 al 99.
+
+  #En este punto ya estarían todas las "piezas" que hacen falta, solo habría que juntarlas
+
+  resultados = {}
+  resultados['matriz100'] = matriz100
+  resultados['matrizFin'] = matrizFin
+  resultados['matrizIntermedia'] = matrizIntermedia
+  resultados['distanciasContenedor100'] = distanciasContenedor100[1:]
+
+  matrizTotal = pd.DataFrame(np.zeros((t, t)))
+  matrizTotal.iloc[0:100, 0:100] = matriz100
+
+  a = matrizFin
+  a.index = list(range(100, t))
+  a.columns = list(range(100, t))
+  matrizTotal.iloc[100:t, 100:t] = a
+
+  b = matrizIntermedia
+  b.index = list(range(100, t))
+  matrizTotal.iloc[100:t, 0:99] = b
+  matrizTotal.iloc[0:99, 100:t] = b.transpose()
+
+  c = distanciasContenedor100
+  c.index = list(range(99, t))
+  matrizTotal.iloc[99, 99:t] = c
+  matrizTotal.iloc[99:t, 99] = c.transpose()
+  
+  resultados['matrizTotal'] = matrizTotal
+
+  np.count_nonzero(matrizTotal==0)#Debería ser 149...
+
+  return matrizTotal
 """La matriz de coordenadas es la siguente (las distancias se miden en m)
 
 Método que accede en GitHub a la matriz distancia de la localidad introducida
