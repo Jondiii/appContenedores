@@ -1344,7 +1344,7 @@ def suma2(plan, nCont, diaMax):
 
   return plan
 
-def optimizacion(planInicial, costeInicial, ncontenedores, estadoContenedores, aumentoDiario, data, iteraciones, capacidadTotal, imprime = True): 
+def optimizacion(planInicial, costeInicial, ncontenedores, estadoContenedores, aumentoDiario, data, iteraciones, capacidadTotal, vecindario): 
   plan = []
   resultados = []
   planes = []
@@ -1354,7 +1354,7 @@ def optimizacion(planInicial, costeInicial, ncontenedores, estadoContenedores, a
   while (i <= iteraciones):
 
     n = 1
-    while (n < ncontenedores-1):
+    while (n < vecindario):
       #if imprime:
         #print("\n·············")
         #print("Iteración: ", i)
@@ -1472,21 +1472,34 @@ class WidgetGallery(QDialog):
         tab1hbox.addWidget(localidadCombo)
         
         numDiasEdit = QLineEdit(self)
-        numDiasLabel = QLabel("&Numero de dias:", self)
+        numDiasLabel = QLabel("&Número de dias:", self)
         numDiasLabel.setBuddy(numDiasEdit)
         tab1hbox.addWidget(numDiasLabel)
         tab1hbox.addWidget(numDiasEdit)
 
         capacidadContenedorEdit = QLineEdit(self)
-        capacidadContenedorLabel = QLabel("Capacidad maxima de los contenedores:", self)
+        capacidadContenedorLabel = QLabel("Capacidad máxima de los contenedores:", self)
         capacidadContenedorLabel.setBuddy(capacidadContenedorEdit)
         tab1hbox.addWidget(capacidadContenedorLabel)
         tab1hbox.addWidget(capacidadContenedorEdit)
 
+        iteracionesEdit = QLineEdit(self)
+        iteracionesEdit.setText("5")
+        iteracionesLabel = QLabel("Número de iteraciones a realizar:", self)
+        iteracionesLabel.setBuddy(iteracionesEdit)
+        tab1hbox.addWidget(iteracionesLabel)
+        tab1hbox.addWidget(iteracionesEdit)
+
+        vecinadrioEdit = QLineEdit(self)
+        vecindarioLabel = QLabel("Tamaño del vecindario:", self)
+        vecindarioLabel.setBuddy(vecinadrioEdit)
+        tab1hbox.addWidget(vecindarioLabel)
+        tab1hbox.addWidget(vecinadrioEdit)
+
         guardadGeneral = QPushButton(self)
         guardadGeneral.setText("Guardar")
         tab1hbox.addWidget(guardadGeneral)
-        guardadGeneral.clicked.connect(lambda checked, obj=[localidadCombo,numDiasEdit,capacidadContenedorEdit] : self.guardarDatos(obj))
+        guardadGeneral.clicked.connect(lambda checked, obj=[localidadCombo,numDiasEdit,capacidadContenedorEdit,iteracionesEdit,vecinadrioEdit] : self.guardarDatos(obj))
 
         tab1.setLayout(tab1hbox)
 
@@ -1706,10 +1719,11 @@ class WidgetGallery(QDialog):
 
     def guardarDatos(self,obj):
         # shost is a QString object
-        
         datosPlanificar['Localidad'] = str(obj[0].currentText())
         datosPlanificar['numDias'] = obj[1].text()
         datosPlanificar['capacidadContenedor'] = obj[2].text()
+        datosPlanificar['iteraciones'] = obj[3].text()
+        datosPlanificar['vecindario'] = obj[4].text()
 
     def planificar(self): 
       for dc in datosContenedores: 
@@ -1738,6 +1752,8 @@ class WidgetGallery(QDialog):
       aumentoDiario = datosPlanificar['aumentoDiario']
       separadorV = ","
       capacidadContenedor = int(datosPlanificar['capacidadContenedor'])
+      iteraciones = int(datosPlanificar['iteraciones'])
+      tamanyoVecindario = int(datosPlanificar['vecindario'])
 
       print(localidad)
       import time 
@@ -1786,7 +1802,7 @@ class WidgetGallery(QDialog):
       print("planInicial: ", dfToList(plan))
       print("######################\n")
 
-      plan, costes = optimizacion(plan, costeInicial, ncontenedores, estadoContenedores, aumentoDiario, data, 5,  capacidadTotal, imprime = True)
+      plan, costes = optimizacion(plan, costeInicial, ncontenedores, estadoContenedores, aumentoDiario, data, iteraciones,  capacidadTotal, tamanyoVecindario)
       print("\nDespues de la optimización")
       print("\n######################")
       print("plan: ", dfToList(plan))
