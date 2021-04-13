@@ -1854,7 +1854,6 @@ class WidgetGallery(QDialog):
 
       print("\nCostes: ", coste)  
 
-      
       print("--- %s seconds ---" % (time.time() - start_time))      
 
     def threadPlanificar(self):
