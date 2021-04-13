@@ -1073,7 +1073,7 @@ def solucionaProblema(data):
 
 """#### Funcion"""
 
-def funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal,localidad):
+def funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal,localidad,tamanyoContenedor):
 
   text_file = open("Data/sample.txt", "w")
   now = datetime.now()
@@ -1090,6 +1090,7 @@ def funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal,locali
   results = []
   costes = []
   dataOriginal = data
+  aumentoDiario = (aumentoDiario * tamanyoContenedor)/100
   #capacidadTotal = data['num_vehicles'] * data['vehicle_capacities'][0]
   demandas = []
 
@@ -1156,9 +1157,9 @@ def funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal,locali
 
     data = newDatamodel(dataOriginal, contenedoresARecoger)
 
-    if (demanda[demanda>100].isnull().sum().sum()!=len(demanda)): 
+    if (demanda[demanda>tamanyoContenedor].isnull().sum().sum()!=len(demanda)): 
       #Salimos del bucle, dejar de planificar el resto de días.
-      desborde = list(np.where(demanda>100)[0])
+      desborde = list(np.where(demanda>tamanyoContenedor)[0])
       text_file.write("Contenedor(es) desbordado(s): {}\n".format(desborde))
       text_file.write("#contenedor desborda cuando demanda > 100\n")
       #print("Contenedor(es) desbordado(s):", desborde)
@@ -1220,7 +1221,6 @@ def funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal,locali
     for i in indices:
       #estadoContenedores[i] = 0
       dataOriginal['demands'][i] = 0
-    
 
     estadoContenedores = dataOriginal['demands']
     estadoContenedores = pd.DataFrame(estadoContenedores)
@@ -1235,7 +1235,7 @@ def funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal,locali
 
 """####FuncionCostes"""
 
-def funcionCostes(data, plan, estadoContenedores, aumentoDiario, capacidadTotal):
+def funcionCostes(data, plan, estadoContenedores, aumentoDiario, capacidadTotal, tamanyoContenedor):
   if (len(data['datos'])!=len(plan)):
     raise Exception("El número de contenedores en el plan y en el data no coinciden")
 
@@ -1245,7 +1245,7 @@ def funcionCostes(data, plan, estadoContenedores, aumentoDiario, capacidadTotal)
   results = []
   costes = []
   dataOriginal = data
-
+  aumentoDiario = (aumentoDiario * tamanyoContenedor)/100
   #print("Estado inicial: ", dfToList(estadoContenedores))
   
   while i <= numDias:
@@ -1275,9 +1275,9 @@ def funcionCostes(data, plan, estadoContenedores, aumentoDiario, capacidadTotal)
     #print("DIA {0}, cont a recoger {1}".format(dia, len(indicesRecoger)))#ESTA LENGTH DA 0
     data = newDatamodel(dataOriginal, contenedoresARecoger)
 
-    if (demanda[demanda>100].isnull().sum().sum()!=len(demanda)): 
+    if (demanda[demanda>tamanyoContenedor].isnull().sum().sum()!=len(demanda)): 
       #Salimos del bucle, dejar de planificar el resto de días.
-      desborde = list(np.where(demanda>100)[0])
+      desborde = list(np.where(demanda>tamanyoContenedor)[0])
       #print("OJO, DESBORDE")
       for d in desborde:
         costes[dia-1] = costes[dia-1]+dfToList(estadoContenedores)[d]
@@ -1344,9 +1344,8 @@ def suma2(plan, nCont, diaMax):
 
   return plan
 
-def optimizacion(planInicial, costeInicial, ncontenedores, estadoContenedores, aumentoDiario, data, iteraciones, capacidadTotal, vecindario): 
+def optimizacion(planInicial, costeInicial, ncontenedores, estadoContenedores, aumentoDiario, data, iteraciones, capacidadTotal, vecindario, tamanyoContenedor): 
   plan = []
-  resultados = []
   planes = []
   listaCostes = []
   
@@ -1362,7 +1361,7 @@ def optimizacion(planInicial, costeInicial, ncontenedores, estadoContenedores, a
 
       #plan = suma(planInicial, n, planInicial.max()[0])
       plan = suma2(planInicial, ncontenedores, planInicial.max()[0])
-      costes, results = funcionCostes(data, plan, estadoContenedores, aumentoDiario, capacidadTotal)
+      costes, _ = funcionCostes(data, plan, estadoContenedores, aumentoDiario, capacidadTotal, tamanyoContenedor)
     
       coste = 0 
       for c in costes: 
@@ -1791,7 +1790,7 @@ class WidgetGallery(QDialog):
       #en algún punto... quitar los 5 minutos en la time-matrix y ponerlos como "de servicio"
 
       # costes de este plan 
-      costesIniciales, results = funcionCostes(data, plan, estadoContenedores, aumentoDiario, capacidadTotal)
+      costesIniciales, results = funcionCostes(data, plan, estadoContenedores, aumentoDiario, capacidadTotal, capacidadContenedor)
 
       costeInicial = 0 
       for c in costesIniciales: 
@@ -1802,7 +1801,7 @@ class WidgetGallery(QDialog):
       print("planInicial: ", dfToList(plan))
       print("######################\n")
 
-      plan, costes = optimizacion(plan, costeInicial, ncontenedores, estadoContenedores, aumentoDiario, data, iteraciones,  capacidadTotal, tamanyoVecindario)
+      plan, costes = optimizacion(plan, costeInicial, ncontenedores, estadoContenedores, aumentoDiario, data, iteraciones,  capacidadTotal, tamanyoVecindario, capacidadContenedor)
       print("\nDespues de la optimización")
       print("\n######################")
       print("plan: ", dfToList(plan))
@@ -1812,7 +1811,7 @@ class WidgetGallery(QDialog):
 
       #print("SOLUCIÓN")
 
-      coste, resultado, demandas = funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal, localidad)
+      coste, resultado, demandas = funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal, localidad, capacidadContenedor)
       lat, longi, depot = getCoordenadas(data)
 
       '''
@@ -1843,7 +1842,7 @@ class WidgetGallery(QDialog):
           
           #print(listaR)
           mapas = get_map(lat, longi, depot, capacidadCamiones, capacidadContenedor, listaR, listaT, listaL, listaLC)
-          
+          print("\nlistaCargas:", listaLC)
           for mapa in mapas:
             mapa.save("Resultados/mapa"+str(d+1)+".html")
           
