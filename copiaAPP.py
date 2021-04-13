@@ -171,9 +171,154 @@ def create_data_model2(localidad, capacidadCamiones, ncamiones, depot, capacidad
 
     return data
 
-"""#### Métodos matriz de distancias
+"""#### Métodos para generar matriz de distancias
 """
+def matrizDistanciasAPI(datos):
+  #limit = 0
+  coordenadas = ""
 
+  longitud = round(datos['longitude'], 2).to_numpy()
+  latitud = round(datos['latitude'], 2).to_numpy()
+
+  #Transformamos de UTM a Coordenadas Geográficas (Grados)
+  scrProj = pyproj.Proj(proj="utm", zone = 30, ellps="WGS84", units = "m")
+  dstProj = pyproj.Proj(proj = "longlat", ellps="WGS84", datum = "WGS84")
+
+  i = 0
+  for n in datos['latitude']:
+    longitud[i],latitud[i]=pyproj.transform(scrProj,dstProj, longitud[i],latitud[i])
+    i +=1
+
+  for (lat, longi) in zip(latitud, longitud):
+    coordenadas = coordenadas + str(round(longi,6)) + "," + str(round(lat,6)) + ";"
+  
+  #while limit < 100:
+  #      coordenadas = coordenadas + str(round(longitud[limit],6)) + "," + str(round(latitud[limit],6)) + ";"
+  #      limit = limit + 1
+
+  coordenadas = coordenadas[:-1]
+
+  url = 'http://router.project-osrm.org/table/v1/driving/'+coordenadas+'?annotations=duration,distance'
+  
+  response = urllib.request.urlopen(url)
+  result = json.load(response)
+  
+  '''
+  req = urllib.Request(url) 
+  #req.add_header('User-Agent', User_Agent)
+  response = urllib.urlopen(req) 
+ 
+  req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+  response = urllib.request.urlopen(req)
+  print(req)
+  '''
+
+  #matriz = result['rows'][0]['elements'][0]["distance"]["value"] #Con esto sacamos la distancia en metros.
+  matriz = pd.DataFrame(result['distances'])
+
+  return matriz
+
+def matrizDistanciasAPIGrande(datos):
+  t = len(datos)
+  if  t >= 200:
+    raise Exception("La localidad no puede tener 200 o más contenedores.")
+    return 0
+
+  cont = 0
+  coordenadas = ""
+  coordenadas2 = ""
+  arrayCoordenadasFin = []#Aquí se guardarán los strings que se usarán para sacar las distancias de los últimos contenedores
+
+  longitud = round(datos['longitude'], 2).to_numpy()
+  latitud = round(datos['latitude'], 2).to_numpy()
+
+  #Transformamos de UTM a Coordenadas Geográficas (Grados)
+  scrProj = pyproj.Proj(proj="utm", zone = 30, ellps="WGS84", units = "m")
+  dstProj = pyproj.Proj(proj = "longlat", ellps="WGS84", datum = "WGS84")
+
+  i = 0
+  for n in datos['latitude']:
+    longitud[i],latitud[i]=pyproj.transform(scrProj,dstProj, longitud[i],latitud[i])
+    i +=1
+
+  while cont <= 99:
+    if cont == 99:
+      cont2 = 100
+      while cont2 < len(datos):#Guardamos las coordenadas de los 99 primeros con cada uno de los que queden
+        arrayCoordenadasFin.append(coordenadas + str(round(longitud[cont2],6)) + "," + str(round(latitud[cont2],6)))
+        coordenadas2 = coordenadas2 + str(round(longitud[cont2],6)) + "," + str(round(latitud[cont2],6)) + ";"#De paso, guardamos las coordenadas de solo los últimos contenedores
+        cont2 = cont2 + 1
+    
+    coordenadas = coordenadas + str(round(longitud[cont],6)) + "," + str(round(latitud[cont],6)) + ";"
+    cont = cont + 1
+
+  coordenadas = coordenadas[:-1]
+  coordenadas2 = coordenadas2[:-1]
+
+  url = 'http://router.project-osrm.org/table/v1/driving/'+coordenadas+'?annotations=duration,distance'
+  response = urllib.request.urlopen(url)
+  result = json.load(response)
+
+  matriz100 = pd.DataFrame(result['distances'])# Matriz de los 100 primeros contenedores
+
+  url = 'http://router.project-osrm.org/table/v1/driving/'+coordenadas2+'?annotations=duration,distance'
+  response = urllib.request.urlopen(url)
+  result = json.load(response)
+
+  matrizFin = pd.DataFrame(result['distances'])# Matriz de los últimos contenedores
+
+  matrizIntermedia = pd.DataFrame(np.zeros((1, 99)))
+  matrizIntermedia = matrizIntermedia[:][1]
+
+  for string in arrayCoordenadasFin:
+    url = 'http://router.project-osrm.org/table/v1/driving/'+string+'?annotations=duration,distance'
+    response = urllib.request.urlopen(url)
+    result = json.load(response)
+
+    matrizTemp = pd.DataFrame(result['distances'])
+    matrizIntermedia = pd.concat([matrizIntermedia, matrizTemp[:][-1:]], ignore_index=True)
+
+  matrizIntermedia = matrizIntermedia[:][1:]#Cogemos todas las filas menos la primera (que tiene todo 0)
+  matrizIntermedia = matrizIntermedia.reset_index(drop = True)
+
+  contenedor100 = str(round(longitud[100],6)) + "," + str(round(latitud[100],6)) + ";" + coordenadas2
+  url = 'http://router.project-osrm.org/table/v1/driving/'+contenedor100+'?annotations=duration,distance'
+  response = urllib.request.urlopen(url)
+  result = json.load(response)
+
+  distanciasContenedor100 = pd.DataFrame(result['distances'])[:][0]#Contenedor 100 con el resto de los que sobran, solo teníamos del 0 al 99.
+
+  #En este punto ya estarían todas las "piezas" que hacen falta, solo habría que juntarlas
+
+  resultados = {}
+  resultados['matriz100'] = matriz100
+  resultados['matrizFin'] = matrizFin
+  resultados['matrizIntermedia'] = matrizIntermedia
+  resultados['distanciasContenedor100'] = distanciasContenedor100[1:]
+
+  matrizTotal = pd.DataFrame(np.zeros((t, t)))
+  matrizTotal.iloc[0:100, 0:100] = matriz100
+
+  a = matrizFin
+  a.index = list(range(100, t))
+  a.columns = list(range(100, t))
+  matrizTotal.iloc[100:t, 100:t] = a
+
+  b = matrizIntermedia
+  b.index = list(range(100, t))
+  matrizTotal.iloc[100:t, 0:99] = b
+  matrizTotal.iloc[0:99, 100:t] = b.transpose()
+
+  c = distanciasContenedor100
+  c.index = list(range(99, t))
+  matrizTotal.iloc[99, 99:t] = c
+  matrizTotal.iloc[99:t, 99] = c.transpose()
+  
+  resultados['matrizTotal'] = matrizTotal
+
+  np.count_nonzero(matrizTotal==0)#Debería ser 149...
+
+  return matrizTotal
 """La matriz de coordenadas es la siguente (las distancias se miden en m)
 
 Método que accede en GitHub a la matriz distancia de la localidad introducida
@@ -524,12 +669,11 @@ def sacarPlan(data, sizeCont, nDias, capacidadTotal, estadoI, aumentoD):
 
   #estadoI = [0]
   #aumentoD = [0]
+ 
+  estadoI = estadoI.drop(0)
+  aumentoD = aumentoD.drop(0)
   print("total truck capacity: ", capacidadTotal)
   plan = [0]
-  estadoI = dfToList(estadoI)
-  aumentoD = dfToList(aumentoD)
-  estadoI.pop(0)
-  aumentoD.pop(0)
   '''
   i = 0
   rd.seed(1)
@@ -546,8 +690,6 @@ def sacarPlan(data, sizeCont, nDias, capacidadTotal, estadoI, aumentoD):
   estadoDF = pd.DataFrame(estadoI)
   data['demands'] = dfToList(estadoDF)
   aumentoDF = pd.DataFrame(aumentoD)
-  print(estadoDF)
-  print(aumentoDF)
 
   while i <= nDias:
     recogido = 0
@@ -560,12 +702,12 @@ def sacarPlan(data, sizeCont, nDias, capacidadTotal, estadoI, aumentoD):
           recogido = recogido + n
           newEstado[0][cont] = 0 #Se ha recogido el contenedor.
           plan[cont] = i
-        
+
         else:
           #TODO ¿Qué hacer si el contenedor va a desbordar pero no puede ser recogido este dia?
           pass
-      
-      elif(((recogido + n) <= capacidadTotal) & (n > 40) & (plan[cont]==nDias+1)):#Dejamos los que tengan menos de 20% para "rellenar" posibles huecos
+
+      elif (((recogido + n) <= capacidadTotal) & (n > 40) & (plan[cont]==nDias+1)):#Dejamos los que tengan menos de 20% para "rellenar" posibles huecos
         recogido = recogido + n
         newEstado[0][cont] = 0 #Se ha recogido el contenedor.
         plan[cont] = i
@@ -855,10 +997,13 @@ def get_map(lat, longi, depot, cCamiones, cContenedor, rutas, tiempos, llenados,
       locationList = locationList.values.tolist()
 
       i = 0
+      porcentajeLlenado = 0
       for point in out['ruta']:
+          porcentajeLlenado += porcentajeLlenado + (llenado[i]/capacidad)
+          porcentajeLlenado = round(porcentajeLlenado, 2)
           folium.Marker(
               locationList[point], tooltip=str(i),
-              popup="Hora planificada: {0}\nParada {1} del camión {2}\nContenedor al {3}%\nCamión al {4}%".format(getTime(horas[i]), i, n, (estadoCont[i]/cContenedor)*100, (llenado[i]/capacidad)*100)
+              popup="Hora planificada: {0}\nParada {1} del camión {2}\nContenedor al {3}%\nCamión al {4}%".format(getTime(horas[i]), i, n, round((estadoCont[i]/cContenedor)*100,2), porcentajeLlenado)
           ).add_to(feature_group)
           i += 1
 
@@ -928,7 +1073,7 @@ def solucionaProblema(data):
 
 """#### Funcion"""
 
-def funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal,localidad):
+def funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal,localidad,tamanyoContenedor):
 
   text_file = open("Data/sample.txt", "w")
   now = datetime.now()
@@ -945,6 +1090,7 @@ def funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal,locali
   results = []
   costes = []
   dataOriginal = data
+  aumentoDiario = (aumentoDiario * tamanyoContenedor)/100
   #capacidadTotal = data['num_vehicles'] * data['vehicle_capacities'][0]
   demandas = []
 
@@ -976,8 +1122,11 @@ def funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal,locali
     contenedoresARecoger = plan[plan == dia]
 
     contenedoresARecoger =  (contenedoresARecoger.replace(np.nan, 0))/dia
+    estadoContenedores = (estadoContenedores.replace(np.nan, 0.0))
     demanda = contenedoresARecoger*(estadoContenedores)
+    demanda = (demanda.replace(np.nan, 0.0))
     #data['demands'] = demanda
+    print(demanda)
 
     #print("Cont a recoger: ", dfToList(contenedoresARecoger))
     #text_file.write("Cont a recoger: {}\n".format(dfToList(contenedoresARecoger)))
@@ -998,6 +1147,7 @@ def funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal,locali
       if (d != 0): 
         demandaActual.append(d)
     
+    
     text_file.write("Demanda: {}\n".format(demandaActual))
     #print("Demanda: ", (demandaActual))
 
@@ -1009,13 +1159,11 @@ def funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal,locali
 
     #print("Indice: ", indicesRecoger)
 
-    valorContenedores = demanda
-
     data = newDatamodel(dataOriginal, contenedoresARecoger)
 
-    if (demanda[demanda>100].isnull().sum().sum()!=len(demanda)): 
+    if (demanda[demanda>tamanyoContenedor].isnull().sum().sum()!=len(demanda)): 
       #Salimos del bucle, dejar de planificar el resto de días.
-      desborde = list(np.where(demanda>100)[0])
+      desborde = list(np.where(demanda>tamanyoContenedor)[0])
       text_file.write("Contenedor(es) desbordado(s): {}\n".format(desborde))
       text_file.write("#contenedor desborda cuando demanda > 100\n")
       #print("Contenedor(es) desbordado(s):", desborde)
@@ -1077,7 +1225,6 @@ def funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal,locali
     for i in indices:
       #estadoContenedores[i] = 0
       dataOriginal['demands'][i] = 0
-    
 
     estadoContenedores = dataOriginal['demands']
     estadoContenedores = pd.DataFrame(estadoContenedores)
@@ -1092,16 +1239,17 @@ def funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal,locali
 
 """####FuncionCostes"""
 
-def funcionCostes(data, plan, estadoContenedores, aumentoDiario, capacidadTotal):
+def funcionCostes(data, plan, estadoContenedores, aumentoDiario, capacidadTotal, tamanyoContenedor):
   if (len(data['datos'])!=len(plan)):
     raise Exception("El número de contenedores en el plan y en el data no coinciden")
 
   i = 0
   numDias = plan.max()[0]
+
   results = []
   costes = []
   dataOriginal = data
-
+  aumentoDiario = (aumentoDiario * tamanyoContenedor)/100
   #print("Estado inicial: ", dfToList(estadoContenedores))
   
   while i <= numDias:
@@ -1122,21 +1270,19 @@ def funcionCostes(data, plan, estadoContenedores, aumentoDiario, capacidadTotal)
     demanda = contenedoresARecoger*estadoContenedores
     #print("Cont a recoger: ", dfToList(contenedoresARecoger))
     #print("Demanda: ", dfToList(demanda))
-
+    
     cont = 0
     for i in plan:
       if  i == dia:
         indicesRecoger.append(cont)
       cont += 1
-
-    valorContenedores = demanda
-
+    #print("DIA {0}, cont a recoger {1}".format(dia, len(indicesRecoger)))#ESTA LENGTH DA 0
     data = newDatamodel(dataOriginal, contenedoresARecoger)
 
-    if (demanda[demanda>100].isnull().sum().sum()!=len(demanda)): 
+    if (demanda[demanda>tamanyoContenedor].isnull().sum().sum()!=len(demanda)): 
       #Salimos del bucle, dejar de planificar el resto de días.
-      desborde = list(np.where(demanda>100)[0])
-
+      desborde = list(np.where(demanda>tamanyoContenedor)[0])
+      #print("OJO, DESBORDE")
       for d in desborde:
         costes[dia-1] = costes[dia-1]+dfToList(estadoContenedores)[d]
 
@@ -1150,12 +1296,12 @@ def funcionCostes(data, plan, estadoContenedores, aumentoDiario, capacidadTotal)
       if solucion:
         costes[dia-1] = -10000 + (resultado['total_distance']/1000)  
         # / 1000 para pasar a km 
-
         #estadoContenedores = estadoContenedores * (1-contenedoresARecoger)
         estadoContenedores = estadoContenedores + aumentoDiario
 
         results.append(resultado)
         #print("  Solución encontrada día {0}. Coste: {1}. Resultado: {2}".format(dia, costes[dia-1], resultado))
+
 
       else:  # Si el plan para ese día no es válido, no se puede recoger con los camiones que tenemos
         estadoContenedores = estadoContenedores + aumentoDiario
@@ -1202,9 +1348,8 @@ def suma2(plan, nCont, diaMax):
 
   return plan
 
-def optimizacion(planInicial, costeInicial, ncontenedores, estadoContenedores, aumentoDiario, data, iteraciones, capacidadTotal, imprime = True): 
+def optimizacion(planInicial, costeInicial, ncontenedores, estadoContenedores, aumentoDiario, data, iteraciones, capacidadTotal, vecindario, tamanyoContenedor): 
   plan = []
-  resultados = []
   planes = []
   listaCostes = []
   
@@ -1212,7 +1357,7 @@ def optimizacion(planInicial, costeInicial, ncontenedores, estadoContenedores, a
   while (i <= iteraciones):
 
     n = 1
-    while (n < ncontenedores-1):
+    while (n < vecindario):
       #if imprime:
         #print("\n·············")
         #print("Iteración: ", i)
@@ -1220,7 +1365,7 @@ def optimizacion(planInicial, costeInicial, ncontenedores, estadoContenedores, a
 
       #plan = suma(planInicial, n, planInicial.max()[0])
       plan = suma2(planInicial, ncontenedores, planInicial.max()[0])
-      costes, results = funcionCostes(data, plan, estadoContenedores, aumentoDiario, capacidadTotal)
+      costes, _ = funcionCostes(data, plan, estadoContenedores, aumentoDiario, capacidadTotal, tamanyoContenedor)
     
       coste = 0 
       for c in costes: 
@@ -1330,21 +1475,34 @@ class WidgetGallery(QDialog):
         tab1hbox.addWidget(localidadCombo)
         
         numDiasEdit = QLineEdit(self)
-        numDiasLabel = QLabel("&Numero de dias:", self)
+        numDiasLabel = QLabel("&Número de dias:", self)
         numDiasLabel.setBuddy(numDiasEdit)
         tab1hbox.addWidget(numDiasLabel)
         tab1hbox.addWidget(numDiasEdit)
 
         capacidadContenedorEdit = QLineEdit(self)
-        capacidadContenedorLabel = QLabel("Capacidad maxima de los contenedores:", self)
+        capacidadContenedorLabel = QLabel("Capacidad máxima de los contenedores:", self)
         capacidadContenedorLabel.setBuddy(capacidadContenedorEdit)
         tab1hbox.addWidget(capacidadContenedorLabel)
         tab1hbox.addWidget(capacidadContenedorEdit)
 
+        iteracionesEdit = QLineEdit(self)
+        iteracionesEdit.setText("5")
+        iteracionesLabel = QLabel("Número de iteraciones a realizar:", self)
+        iteracionesLabel.setBuddy(iteracionesEdit)
+        tab1hbox.addWidget(iteracionesLabel)
+        tab1hbox.addWidget(iteracionesEdit)
+
+        vecinadrioEdit = QLineEdit(self)
+        vecindarioLabel = QLabel("Tamaño del vecindario:", self)
+        vecindarioLabel.setBuddy(vecinadrioEdit)
+        tab1hbox.addWidget(vecindarioLabel)
+        tab1hbox.addWidget(vecinadrioEdit)
+
         guardadGeneral = QPushButton(self)
         guardadGeneral.setText("Guardar")
         tab1hbox.addWidget(guardadGeneral)
-        guardadGeneral.clicked.connect(lambda checked, obj=[localidadCombo,numDiasEdit,capacidadContenedorEdit] : self.guardarDatos(obj))
+        guardadGeneral.clicked.connect(lambda checked, obj=[localidadCombo,numDiasEdit,capacidadContenedorEdit,iteracionesEdit,vecinadrioEdit] : self.guardarDatos(obj))
 
         tab1.setLayout(tab1hbox)
 
@@ -1439,6 +1597,9 @@ class WidgetGallery(QDialog):
         tab2hbox.addWidget(guardarCamionesB,3,0)
         guardarCamionesB.clicked.connect(guardarCamiones)
 
+
+
+
         tab2.setLayout(tab2hbox)
 
    
@@ -1502,8 +1663,6 @@ class WidgetGallery(QDialog):
         guardarContenedoresB.setText("Guardar")
         tab3hbox.addWidget(guardarContenedoresB)
         guardarContenedoresB.clicked.connect(guardarContenedores)
-
-
         tab3.setLayout(tab3hbox)
 
         '''
@@ -1513,23 +1672,23 @@ class WidgetGallery(QDialog):
 
         tabMapas = QTabWidget()
 
-        numDias = 3 #TODO
         i = 0
-        while i < numDias:
-          file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "Resultados/mapa{0}.html".format(i+1)))
-          local_url = QUrl.fromLocalFile(file_path)
-          browser = QWebEngineView()
-          browser.load(local_url)
 
-          tabMapa = QWidget()
-          tabMapabox = QHBoxLayout()
-          tabMapabox.setContentsMargins(5, 5, 5, 5)
-          tabMapabox.addWidget(browser)
-          tabMapa.setLayout(tabMapabox)
-          tabMapas.addTab(tabMapa, "Dia {}".format(i+1))
+        for archivo in os.listdir('Resultados/'):
+          if(archivo.endswith('html')):
+            i += 1
+            file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "Resultados/mapa{0}.html".format(i)))
+            local_url = QUrl.fromLocalFile(file_path)
+            browser = QWebEngineView()
+            browser.load(local_url)
 
-          i+=1
- 
+            tabMapa = QWidget()
+            tabMapabox = QHBoxLayout()
+            tabMapabox.setContentsMargins(5, 5, 5, 5)
+            tabMapabox.addWidget(browser)
+            tabMapa.setLayout(tabMapabox)
+            tabMapas.addTab(tabMapa, "Dia {}".format(i))
+
         #tab4hbox = QHBoxLayout()
         tab4hbox = QHBoxLayout()
         tab4hbox.setContentsMargins(5, 5, 5, 5)
@@ -1553,23 +1712,7 @@ class WidgetGallery(QDialog):
         text_edit.setReadOnly(True)
         text_edit.appendPlainText(text)
         tab5hbox.addWidget(text_edit)
-
-        def refresh(self):
-          tab5hbox.removeWidget(text_edit)
-          text_edit.deleteLater()
-          text_edit2 = QPlainTextEdit()
-          text = open('Data/sample.txt').read()
-          text_edit2.setReadOnly(True)
-          text_edit2.appendPlainText(text)
-          tab5hbox.addWidget(text_edit2)
-          
-
-        refreshB = QPushButton(self)
-        refreshB.setText("Refresh")
-        tab5hbox.addWidget(refreshB)
-        refreshB.clicked.connect(refresh)
         tab5.setLayout(tab5hbox)
-     
 
         self.bottomLeftTabWidget.addTab(tab1, "&General")
         self.bottomLeftTabWidget.addTab(tab2, "&Camiones")
@@ -1579,10 +1722,11 @@ class WidgetGallery(QDialog):
 
     def guardarDatos(self,obj):
         # shost is a QString object
-        
         datosPlanificar['Localidad'] = str(obj[0].currentText())
         datosPlanificar['numDias'] = obj[1].text()
         datosPlanificar['capacidadContenedor'] = obj[2].text()
+        datosPlanificar['iteraciones'] = obj[3].text()
+        datosPlanificar['vecindario'] = obj[4].text()
 
     def planificar(self): 
       for dc in datosContenedores: 
@@ -1597,9 +1741,6 @@ class WidgetGallery(QDialog):
               datosPlanificar['numCamiones']  += 1
               datosPlanificar['capacidadCamiones'].append(c[1])
               datosPlanificar['velocidadCamiones'].append(c[2])
-      
-    
-
 
 
       ''' 
@@ -1614,10 +1755,13 @@ class WidgetGallery(QDialog):
       aumentoDiario = datosPlanificar['aumentoDiario']
       separadorV = ","
       capacidadContenedor = int(datosPlanificar['capacidadContenedor'])
+      iteraciones = int(datosPlanificar['iteraciones'])
+      tamanyoVecindario = int(datosPlanificar['vecindario'])
 
       print(localidad)
       import time 
       start_time = time.time()
+
       """### Main
 
       Comentario: Introduciendo los parametros de esta forma no tenemos la opción de variar el estado inical o el aumento de cada contenedor de forma individual. Revisar.
@@ -1644,12 +1788,13 @@ class WidgetGallery(QDialog):
       #estadoContenedores, aumentoDiario = init(nCont)
       estadoContenedores = pd.DataFrame(fromCharToInt(procesaVector(llenadoInicial, separadorV)))
       aumentoDiario = pd.DataFrame(fromCharToInt(procesaVector(aumentoDiario, separadorV)))
-      #plan = randomPlan(nCont, numDias)
-      plan = sacarPlan(data, capacidadContenedor, numDias, capacidadTotal,estadoContenedores,aumentoDiario )
+      plan = randomPlan(nCont, numDias)
+
+      #plan = sacarPlan(data, capacidadContenedor, numDias, capacidadTotal, estadoContenedores, aumentoDiario)
       #en algún punto... quitar los 5 minutos en la time-matrix y ponerlos como "de servicio"
 
       # costes de este plan 
-      costesIniciales, results = funcionCostes(data, plan, estadoContenedores, aumentoDiario, capacidadTotal)
+      costesIniciales, results = funcionCostes(data, plan, estadoContenedores, aumentoDiario, capacidadTotal, capacidadContenedor)
 
       costeInicial = 0 
       for c in costesIniciales: 
@@ -1660,7 +1805,7 @@ class WidgetGallery(QDialog):
       print("planInicial: ", dfToList(plan))
       print("######################\n")
 
-      plan, costes = optimizacion(plan, costeInicial, ncontenedores, estadoContenedores, aumentoDiario, data, 5,  capacidadTotal, imprime = True)
+      plan, costes = optimizacion(plan, costeInicial, ncontenedores, estadoContenedores, aumentoDiario, data, iteraciones,  capacidadTotal, tamanyoVecindario, capacidadContenedor)
       print("\nDespues de la optimización")
       print("\n######################")
       print("plan: ", dfToList(plan))
@@ -1670,7 +1815,7 @@ class WidgetGallery(QDialog):
 
       #print("SOLUCIÓN")
 
-      coste, resultado, demandas = funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal, localidad)
+      coste, resultado, demandas = funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal, localidad, capacidadContenedor)
       lat, longi, depot = getCoordenadas(data)
 
       '''
@@ -1680,16 +1825,17 @@ class WidgetGallery(QDialog):
       print("Amarillo - límite")
       print("Rojo - desbordadas")
       '''
-      
+      print("Resultado length: ", len(resultado))
       d = 0
       #try:
-      while d < numDias:  
+      #while d < numDias:  
+      while d < len(resultado):
           listaR = []
           listaT = []
           listaL = []
           listaLC = []
           ncam = 0
-
+          print("d=",d)
           while ncam < nCamiones: 
           # sale index out of range
             listaR.append(resultado[d]['listaRutas'][ncam])
@@ -1700,7 +1846,7 @@ class WidgetGallery(QDialog):
           
           #print(listaR)
           mapas = get_map(lat, longi, depot, capacidadCamiones, capacidadContenedor, listaR, listaT, listaL, listaLC)
-          
+          print("\nlistaCargas:", listaLC)
           for mapa in mapas:
             mapa.save("Resultados/mapa"+str(d+1)+".html")
           
@@ -1709,8 +1855,9 @@ class WidgetGallery(QDialog):
       #except:
           #print("Las rutas del día {} hace que se desborden contenedores. Se ha dejado de planificar.".format(d+1))
 
-      print("\nCostes: ", coste)   
-      print("--- %s seconds ---" % (time.time() - start_time))   
+      print("\nCostes: ", coste)  
+
+      print("--- %s seconds ---" % (time.time() - start_time))      
 
     def threadPlanificar(self):
       self._planThread.start()
@@ -1722,7 +1869,6 @@ class WidgetGallery(QDialog):
 
     def closeEvent(self, event):
       event.accept()
-
 
 
 if __name__ == '__main__':

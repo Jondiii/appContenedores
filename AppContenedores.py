@@ -1123,6 +1123,7 @@ def funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal,locali
 
     contenedoresARecoger =  (contenedoresARecoger.replace(np.nan, 0))/dia
     demanda = contenedoresARecoger*(estadoContenedores)
+    demanda = (demanda.replace(np.nan, 0.0))
     #data['demands'] = demanda
 
     #print("Cont a recoger: ", dfToList(contenedoresARecoger))
