@@ -1810,9 +1810,6 @@ class WidgetGallery(QDialog):
       print("costes: ", costes)
       print("######################\n")
 
-
-      #print("SOLUCIÓN")
-
       coste, resultado, demandas = funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal, localidad, capacidadContenedor)
       lat, longi, depot = getCoordenadas(data)
 
@@ -1823,7 +1820,11 @@ class WidgetGallery(QDialog):
       print("Amarillo - límite")
       print("Rojo - desbordadas")
       '''
-      print("Resultado length: ", len(resultado))
+      
+      print("\nCostes: ", coste)
+
+      print("--- %s seconds ---" % (time.time() - start_time)) 
+
       d = 0
       #try:
       #while d < numDias:  
@@ -1833,7 +1834,7 @@ class WidgetGallery(QDialog):
           listaL = []
           listaLC = []
           ncam = 0
-          print("d=",d)
+         
           while ncam < nCamiones: 
           # sale index out of range
             listaR.append(resultado[d]['listaRutas'][ncam])
@@ -1844,18 +1845,13 @@ class WidgetGallery(QDialog):
           
           #print(listaR)
           mapas = get_map(lat, longi, depot, capacidadCamiones, capacidadContenedor, listaR, listaT, listaL, listaLC)
-          print("\nlistaCargas:", listaLC)
           for mapa in mapas:
             mapa.save("Resultados/mapa"+str(d+1)+".html")
           
           d += 1
 
       #except:
-          #print("Las rutas del día {} hace que se desborden contenedores. Se ha dejado de planificar.".format(d+1))
-
-      print("\nCostes: ", coste)  
-
-      print("--- %s seconds ---" % (time.time() - start_time))      
+          #print("Las rutas del día {} hace que se desborden contenedores. Se ha dejado de planificar.".format(d+1))     
 
     def threadPlanificar(self):
       self._planThread.start()
