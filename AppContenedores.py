@@ -999,8 +999,7 @@ def get_map(lat, longi, depot, cCamiones, cContenedor, rutas, tiempos, llenados,
       i = 0
       porcentajeLlenado = 0
       for point in out['ruta']:
-          porcentajeLlenado += porcentajeLlenado + (llenado[i]/capacidad)
-          porcentajeLlenado = round(porcentajeLlenado, 2)
+          porcentajeLlenado = round((llenado[i]/capacidad)*100, 2)
           folium.Marker(
               locationList[point], tooltip=str(i),
               popup="Hora planificada: {0}\nParada {1} del camión {2}\nContenedor al {3}%\nCamión al {4}%".format(getTime(horas[i]), i, n, round((estadoCont[i]/cContenedor)*100,2), porcentajeLlenado)
