@@ -1090,7 +1090,6 @@ def funcion(data, plan, estadoContenedores, aumentoDiario, capacidadTotal,locali
   costes = []
   dataOriginal = data
   aumentoDiario = (aumentoDiario * tamanyoContenedor)/100
-  #capacidadTotal = data['num_vehicles'] * data['vehicle_capacities'][0]
   demandas = []
 
   #print("Estado inicial: ",(dfToList(estadoContenedores)))
@@ -1246,6 +1245,7 @@ def funcionCostes(data, plan, estadoContenedores, aumentoDiario, capacidadTotal,
   costes = []
   dataOriginal = data
   aumentoDiario = (aumentoDiario * tamanyoContenedor)/100
+  estadoContenedores = (estadoContenedores * tamanyoContenedor)/100
   #print("Estado inicial: ", dfToList(estadoContenedores))
   
   while i <= numDias:
