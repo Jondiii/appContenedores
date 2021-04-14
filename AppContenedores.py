@@ -1772,6 +1772,8 @@ class WidgetGallery(QDialog):
       data = create_data_model2(localidad, capacidadCamiones, nCamiones, depot, capacidadContenedor)
       
       ncontenedores = len(data['distance_matrix']) 
+      llenadoInicial = llenadoInicial[0:ncontenedores]
+      aumentoDiario = aumentoDiario[0:ncontenedores]
 
       i = 0 
       capacidadTotal = 0
