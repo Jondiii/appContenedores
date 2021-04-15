@@ -1477,6 +1477,7 @@ class WidgetGallery(QDialog):
         tab1hbox.addWidget(numDiasEdit)
 
         capacidadContenedorEdit = QLineEdit(self)
+        capacidadContenedorEdit.setText("400")
         capacidadContenedorLabel = QLabel("Capacidad máxima de los contenedores:", self)
         capacidadContenedorLabel.setBuddy(capacidadContenedorEdit)
         tab1hbox.addWidget(capacidadContenedorLabel)
