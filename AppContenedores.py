@@ -1398,7 +1398,6 @@ def optimizacion(planInicial, costeInicial, ncontenedores, estadoContenedores, a
 '''
 listaLocalidades = pd.read_csv("https://raw.githubusercontent.com/Jondiii/appContenedores/master/Data/localidades.txt",delimiter=sep, header=header)
 
-
 class WidgetGallery(QDialog):
     def __init__(self, parent=None):
         super(WidgetGallery, self).__init__(parent)
@@ -1484,7 +1483,7 @@ class WidgetGallery(QDialog):
         tab1hbox.addWidget(capacidadContenedorEdit)
 
         iteracionesEdit = QLineEdit(self)
-        iteracionesEdit.setText("5")
+        iteracionesEdit.setText("100")
         iteracionesLabel = QLabel("Número de iteraciones a realizar:", self)
         iteracionesLabel.setBuddy(iteracionesEdit)
         tab1hbox.addWidget(iteracionesLabel)
