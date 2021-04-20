@@ -148,7 +148,7 @@ def create_data_model2(localidad, capacidadCamiones, ncamiones, depot, capacidad
 
     # crear demanda aleatoria para X num de contenedores
     i = 0
-    rd.seed(2)
+    rd.seed()
     while i < len(data['datos']):
       n = rd.randint(capacidadContenedor*0.1, capacidadContenedor)
       data['demands'].append(n) # Añade la carga de cada contenedor, entre 0 y 10.
@@ -1026,7 +1026,7 @@ def init(nCont):
   aumentoD = [0]
   
   i = 0
-  rd.seed(1)
+  rd.seed()
   while i < nCont-1:
     eI = rd.choice((30, 40, 50, 60))
     aD = rd.choice((10, 20, 30))
