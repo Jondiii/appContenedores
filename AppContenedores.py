@@ -1821,10 +1821,8 @@ class WidgetGallery(QDialog):
       print("Amarillo - límite")
       print("Rojo - desbordadas")
       '''
-      
-      print("\nCostes: ", coste)
 
-      print("--- %s seconds ---" % (time.time() - start_time)) 
+      print("\n--- %s seconds ---" % (time.time() - start_time)) 
 
       d = 0
       #try:
@@ -1834,6 +1832,7 @@ class WidgetGallery(QDialog):
           listaT = []
           listaL = []
           listaLC = []
+          tiempoTotal = 0
           ncam = 0
          
           while ncam < nCamiones: 
@@ -1842,6 +1841,7 @@ class WidgetGallery(QDialog):
             listaT.append(resultado[d]['listaTiempos'][ncam])
             listaL.append(resultado[d]['listaCargas'][ncam])#Es el total llenado del camión
             listaLC.append(resultado[d]['listaLlenadoC'][ncam])
+            tiempoTotal += resultado[d]['total_time']
             ncam +=1
           
           #print(listaR)
@@ -1851,8 +1851,7 @@ class WidgetGallery(QDialog):
           
           d += 1
 
-      #except:
-          #print("Las rutas del día {} hace que se desborden contenedores. Se ha dejado de planificar.".format(d+1))     
+      print("Tiempo total: ", tiempoTotal) 
 
     def threadPlanificar(self):
       self._planThread.start()
