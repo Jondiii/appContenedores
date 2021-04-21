@@ -1824,16 +1824,14 @@ class WidgetGallery(QDialog):
       print("\n--- %s seconds ---" % (time.time() - start_time)) 
 
       d = 0
-      #try:
-      #while d < numDias:  
+      tiempoTotal = 0
+      distanciaTotal = 0
+      cargaTotal = 0
       while d < len(resultado):
           listaR = []
           listaT = []
           listaL = []
           listaLC = []
-          tiempoTotal = 0
-          distanciaTotal = 0
-          cargaTotal = 0
           ncam = 0
          
           while ncam < nCamiones: 
