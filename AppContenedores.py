@@ -1844,7 +1844,7 @@ class WidgetGallery(QDialog):
             listaLC.append(resultado[d]['listaLlenadoC'][ncam])
             tiempoTotal += resultado[d]['total_time']
             distanciaTotal += resultado[d]['total_distance']
-            cargaTotal += cargaTotal[d]['total_load']
+            cargaTotal += resultado[d]['total_load']
             ncam +=1
           
           #print(listaR)
