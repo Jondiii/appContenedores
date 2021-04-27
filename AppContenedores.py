@@ -965,7 +965,10 @@ def get_route(ruta, lat, longi):
 def get_map(lat, longi, depot, cCamiones, cContenedor, rutas, tiempos, llenados, contenedores):
   mapas = []
   colores = ('red', 'green', 'blue', 'yellow', 'deeppink', 'darkmagenta', 'orange', 'mediumspringgreen',
-    'darkturquoise', "teal", "navy")
+    'darkturquoise', "teal", "navy", "gray", "aqua", "cadetblue", "coral", "crimson", "mediumorchid",
+    "orangered", "plum", "tomato", "whitesmoke" , 'green', 'blue', 'yellow', 'deeppink', 'darkmagenta',
+    'orange', 'mediumspringgreen', 'darkturquoise', "teal", "navy", "gray", "aqua", "cadetblue", "coral",
+    "crimson", "mediumorchid", "orangered", "plum", "tomato", "whitesmoke")
   m = folium.Map(location=depot,
               zoom_start=13)
 
