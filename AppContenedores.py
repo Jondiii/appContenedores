@@ -1835,6 +1835,9 @@ class WidgetGallery(QDialog):
           listaT = []
           listaL = []
           listaLC = []
+          tiempoTotal += resultado[d]['total_time']
+          distanciaTotal += resultado[d]['total_distance']
+          cargaTotal += resultado[d]['total_load']
           ncam = 0
          
           while ncam < nCamiones: 
@@ -1843,9 +1846,7 @@ class WidgetGallery(QDialog):
             listaT.append(resultado[d]['listaTiempos'][ncam])
             listaL.append(resultado[d]['listaCargas'][ncam])#Es el total llenado del camión
             listaLC.append(resultado[d]['listaLlenadoC'][ncam])
-            tiempoTotal += resultado[d]['total_time']
-            distanciaTotal += resultado[d]['total_distance']
-            cargaTotal += resultado[d]['total_load']
+
             ncam +=1
           
           #print(listaR)
